@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ba221bd337284b99738d7816a91c5, type: 3}
+  m_Name: LevelData_03_SkybridgeSpire
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.Data.LevelData
+  levelId: level_03
+  displayName: Skybridge Spire
+  sceneName: Level_03_SkybridgeSpire
+  buildIndex: 2
+  designerNotes: "Theme: sky bridges and movers. Hard but fair \u2014 Phase 27 adds
+    Checkpoint_C, slower Dartling/Spitter pressure, late Glow Shield. No secrets."
