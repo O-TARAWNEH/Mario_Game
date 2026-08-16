@@ -4,6 +4,7 @@
 // Dependencies: MusicSystem, SfxSystem, AudioVolumeSettings, GameStateManager, GameLog
 
 using BounderTrail.Core;
+using BounderTrail.Levels;
 using BounderTrail.Save;
 using UnityEngine;
 

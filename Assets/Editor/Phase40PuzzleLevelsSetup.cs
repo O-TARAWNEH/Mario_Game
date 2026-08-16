@@ -5,6 +5,7 @@
 // Batchmode: -executeMethod BounderTrail.EditorTools.Phase40PuzzleLevelsSetup.SetupPuzzleLevels
 
 #if UNITY_EDITOR
+using System.IO;
 using BounderTrail.Core;
 using BounderTrail.Data;
 using BounderTrail.Levels;
@@ -25,6 +26,9 @@ namespace BounderTrail.EditorTools
         private const string GameplayScenePath = "Assets/Scenes/Gameplay.unity";
         private const string BootstrapScenePath = "Assets/Scenes/Bootstrap.unity";
 
+        private static string PendingRebuildFlagPath =>
+            Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "Phase40Rebuild.pending"));
+
         private const float SpikeHalfHeight = 0.275f;
         private const float FireHalfHeight = 0.45f;
         private const float EnemyStandOffset = 0.35f;
@@ -40,7 +44,7 @@ namespace BounderTrail.EditorTools
                 $"Assets/Scenes/{ProjectConstants.Level04SceneName}.unity",
                 $"{DataFolder}/LevelData_04_EchoCaverns.asset",
                 3,
-                "Puzzle timing cavern — blink platforms, bounce sync, mover gap, Speed Burst fire dash."),
+                "Fair solid stepping cavern; optional blink secrets; one crawlbug; Speed Burst soft fire gate."),
             new LevelSpec(
                 "level_05",
                 "Lantern Lockworks",
@@ -48,8 +52,50 @@ namespace BounderTrail.EditorTools
                 $"Assets/Scenes/{ProjectConstants.Level05SceneName}.unity",
                 $"{DataFolder}/LevelData_05_LanternLockworks.asset",
                 4,
-                "Switch lockworks — pressure gates, timed latch, Glow Shield fire hall, moving spike finale.")
+                "Switch lockworks on solid bridges; latch/timed gates; one crawlbug; Glow Shield single fire.")
         };
+
+        [InitializeOnLoadMethod]
+        private static void ConsumePendingRebuild()
+        {
+            if (!File.Exists(PendingRebuildFlagPath))
+            {
+                return;
+            }
+
+            try
+            {
+                File.Delete(PendingRebuildFlagPath);
+            }
+            catch
+            {
+                // Retry next domain reload if the flag is locked.
+                return;
+            }
+
+            EditorApplication.delayCall += () =>
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    return;
+                }
+
+                RebuildPuzzleLevelsOnly();
+            };
+        }
+
+        /// <summary>Creates Temp/Phase40Rebuild.pending so the open Editor rebuilds after compile.</summary>
+        public static void RequestPendingRebuild()
+        {
+            var path = PendingRebuildFlagPath;
+            var folder = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(folder) && !Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            File.WriteAllText(path, "rebuild");
+        }
 
         private readonly struct LevelSpec
         {
@@ -157,6 +203,61 @@ namespace BounderTrail.EditorTools
             Debug.Log(
                 $"{GameLog.ProjectPrefix}[Setup] Phase 40 ready — Echo Caverns + Lantern Lockworks " +
                 "with timed platforms, switches, and gates.");
+        }
+
+        [MenuItem("Bounder Trail/Phase 40/Rebuild Echo Caverns Only")]
+        public static void RebuildEchoCavernsOnly()
+        {
+            RebuildSingle(PuzzleCampaign[0], "Echo Caverns rebuilt with a fair solid stepping route.");
+        }
+
+        [MenuItem("Bounder Trail/Phase 40/Rebuild Lantern Lockworks Only")]
+        public static void RebuildLanternLockworksOnly()
+        {
+            RebuildSingle(PuzzleCampaign[1], "Lantern Lockworks rebuilt with solid bridges and light combat.");
+        }
+
+        [MenuItem("Bounder Trail/Phase 40/Rebuild Puzzle Levels Only")]
+        public static void RebuildPuzzleLevelsOnly()
+        {
+            EnsurePuzzlePrefabs();
+            var kit = LoadPrefabs();
+            if (kit == null)
+            {
+                Debug.LogError($"{GameLog.ProjectPrefix}[Setup] Rebuild puzzle levels aborted — missing prefabs.");
+                return;
+            }
+
+            for (var i = 0; i < PuzzleCampaign.Length; i++)
+            {
+                EnsureCampaignScene(PuzzleCampaign[i]);
+                BuildLevel(PuzzleCampaign[i], kit);
+                CreateOrUpdateLevelData(PuzzleCampaign[i]);
+                DisablePixelPerfect(PuzzleCampaign[i].ScenePath);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"{GameLog.ProjectPrefix}[Setup] Echo Caverns + Lantern Lockworks layouts rebuilt.");
+        }
+
+        private static void RebuildSingle(LevelSpec spec, string successMessage)
+        {
+            EnsurePuzzlePrefabs();
+            var kit = LoadPrefabs();
+            if (kit == null)
+            {
+                Debug.LogError($"{GameLog.ProjectPrefix}[Setup] Rebuild aborted — missing prefabs.");
+                return;
+            }
+
+            EnsureCampaignScene(spec);
+            BuildLevel(spec, kit);
+            CreateOrUpdateLevelData(spec);
+            DisablePixelPerfect(spec.ScenePath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"{GameLog.ProjectPrefix}[Setup] {successMessage}");
         }
 
         private static void EnsurePuzzlePrefabs()
@@ -332,6 +433,7 @@ namespace BounderTrail.EditorTools
             ClearChildren(roots.Hazards);
             ClearChildren(roots.Checkpoints);
             ClearChildren(roots.Decorations);
+            ClearTemplateLeftovers(levelRoot.transform);
 
             for (var i = levelRoot.transform.childCount - 1; i >= 0; i--)
             {
@@ -351,94 +453,223 @@ namespace BounderTrail.EditorTools
                 BuildLanternLockworks(levelRoot, roots, kit);
             }
 
+            // Visual polish without overwriting Pip.
+            PaintEchoGroundStrip(levelRoot.transform);
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, spec.ScenePath);
             Debug.Log($"{GameLog.ProjectPrefix}[Setup] Authored {spec.DisplayName}.");
         }
 
+        private static void ClearTemplateLeftovers(Transform levelRoot)
+        {
+            if (levelRoot == null)
+            {
+                return;
+            }
+
+            for (var i = levelRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = levelRoot.GetChild(i);
+                if (IsTemplateLeftoverName(child.name)
+                    || (child.name.StartsWith("Hazard_") && child.parent == levelRoot)
+                    || (child.name.StartsWith("Enemy_") && child.parent == levelRoot))
+                {
+                    Object.DestroyImmediate(child.gameObject);
+                }
+            }
+
+            // Wipe leftover template props under content folders (Gameplay clone ships 7 enemies + markers).
+            var folders = new[] { "Platforms", "Hazards", "Enemies", "Collectibles", "Checkpoints", "Decorations" };
+            for (var f = 0; f < folders.Length; f++)
+            {
+                var folder = levelRoot.Find(folders[f]);
+                if (folder == null)
+                {
+                    continue;
+                }
+
+                for (var i = folder.childCount - 1; i >= 0; i--)
+                {
+                    var child = folder.GetChild(i);
+                    if (IsTemplateLeftoverName(child.name)
+                        || child.name.StartsWith("Enemy_")
+                        || child.name.StartsWith("Hazard_")
+                        || child.name.StartsWith("Coin_")
+                        || child.name.StartsWith("PowerUp_"))
+                    {
+                        Object.DestroyImmediate(child.gameObject);
+                    }
+                }
+            }
+        }
+
+        private static bool IsTemplateLeftoverName(string n)
+        {
+            return n.StartsWith("Marker_")
+                   || n.StartsWith("Sample_")
+                   || n.StartsWith("Platform_")
+                   || n == "Ground_Main"
+                   || n == "Ground"
+                   || n == "Platform_Slope";
+        }
+
+        private static void PaintEchoGroundStrip(Transform levelRoot)
+        {
+            // Optional visual strip — Phase 24 helper may not be available; skip safely.
+            var tilemaps = levelRoot.Find("Tilemaps");
+            if (tilemaps == null)
+            {
+                return;
+            }
+
+            // Leave existing tilemap art alone; gameplay collision is prefab-owned.
+        }
+
         private static void BuildEchoCaverns(LevelRoot levelRoot, ContentRoots roots, PrefabKit kit)
         {
-            // Timing puzzle: blink pads over a pit, then bounce / mover / speed-fire finale.
-            const float h = 0.55f;
-            SetBounds(roots.Bounds, new Vector2(58f, 24f), new Vector2(24f, 3f));
-            SetTransform(roots.Spawn, new Vector3(0.8f, 0.35f, 0f));
+            // Fair stepping cavern: solid pads with walk-jump gaps (~1.8–2.5), gentle rises.
+            // Blink pads are optional secrets only. One crawlbug on a wide shelf.
+            const float h = 0.65f;
+            SetBounds(roots.Bounds, new Vector2(58f, 20f), new Vector2(24f, 1.5f));
+            SetTransform(roots.Spawn, new Vector3(1.0f, 0.15f, 0f));
 
-            var start = new Vector3(3f, -0.4f, 0f);
-            var ledge = new Vector3(12f, 0.8f, 0f);
-            var mid = new Vector3(22f, 1.6f, 0f);
-            var rise = new Vector3(31f, 2.6f, 0f);
-            var exitPad = new Vector3(42f, 3.4f, 0f);
+            var start = new Vector3(3.2f, -1.05f, 0f);
+            var pad1 = new Vector3(10.0f, -0.55f, 0f);
+            var shelfA = new Vector3(16.0f, -0.1f, 0f);
+            var pad2 = new Vector3(21.8f, 0.35f, 0f);
+            var shelfB = new Vector3(28.0f, 0.8f, 0f);
+            var pad3 = new Vector3(34.2f, 1.2f, 0f);
+            var shelfC = new Vector3(40.2f, 1.6f, 0f);
+            var pad4 = new Vector3(45.8f, 2.0f, 0f);
+            var exitPad = new Vector3(52.0f, 2.35f, 0f);
 
-            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Start", start, new Vector2(7f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Ledge", ledge, new Vector2(4.5f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Mid", mid, new Vector2(5f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Rise", rise, new Vector2(5f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Exit", exitPad, new Vector2(7f, h));
+            const float startW = 7.0f;
+            const float pad1W = 3.2f;
+            const float shelfAW = 5.0f;
+            const float pad2W = 3.0f;
+            const float shelfBW = 5.8f;
+            const float pad3W = 3.2f;
+            const float shelfCW = 5.2f;
+            const float pad4W = 3.0f;
+            const float exitW = 7.5f;
+
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Start", start, new Vector2(startW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Pad1", pad1, new Vector2(pad1W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_ShelfA", shelfA, new Vector2(shelfAW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Pad2", pad2, new Vector2(pad2W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_ShelfB", shelfB, new Vector2(shelfBW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Pad3", pad3, new Vector2(pad3W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_ShelfC", shelfC, new Vector2(shelfCW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Pad4", pad4, new Vector2(pad4W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Cave_Exit", exitPad, new Vector2(exitW, h));
 
             var topStart = PlatTop(start.y, h);
-            var topLedge = PlatTop(ledge.y, h);
-            var topMid = PlatTop(mid.y, h);
-            var topRise = PlatTop(rise.y, h);
+            var topA = PlatTop(shelfA.y, h);
+            var topB = PlatTop(shelfB.y, h);
+            var topC = PlatTop(shelfC.y, h);
             var topExit = PlatTop(exitPad.y, h);
 
-            // Blink stepping stones between start and ledge.
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_A", new Vector3(7.6f, 0.1f, 0f), new Vector2(1.6f, 0.45f), 1.25f, 1.0f, 0f, true);
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_B", new Vector3(9.4f, 0.35f, 0f), new Vector2(1.6f, 0.45f), 1.25f, 1.0f, 0.6f, false);
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_C", new Vector3(11.0f, 0.55f, 0f), new Vector2(1.5f, 0.45f), 1.25f, 1.0f, 1.2f, true);
+            // Optional blink shortcut / secret coins above Start→Pad1 (main path stays solid).
+            PlaceTimed(
+                roots.Platforms,
+                kit.Timed,
+                "Blink_Secret_A",
+                new Vector3(7.4f, 0.45f, 0f),
+                new Vector2(1.6f, 0.4f),
+                1.5f,
+                1.0f,
+                0f,
+                true);
+            PlaceTimed(
+                roots.Platforms,
+                kit.Timed,
+                "Blink_Secret_B",
+                new Vector3(8.9f, 0.65f, 0f),
+                new Vector2(1.6f, 0.4f),
+                1.5f,
+                1.0f,
+                0.7f,
+                false);
 
-            Place(roots.Platforms, kit.Bounce, "Bounce_Up", new Vector3(14.2f, topLedge - 0.15f, 0f));
-            PlaceTiled(roots.Platforms, kit.OneWay, "OneWay_Return", new Vector3(16.5f, 2.8f, 0f), new Vector2(2.4f, 0.35f));
+            // Soft heart ledge above Shelf A (bounce assist, not required).
+            Place(roots.Platforms, kit.Bounce, "Bounce_Assist", new Vector3(shelfA.x + 1.4f, topA - 0.12f, 0f));
+            PlaceTiled(roots.Platforms, kit.OneWay, "OneWay_HeartLedge", new Vector3(18.6f, 1.55f, 0f), new Vector2(2.4f, 0.35f));
 
+            // Optional mover beside Pad4 — exit is already reachable via Pad4 solid step.
             PlaceMoving(
                 roots.Platforms,
                 kit.Moving,
-                "Mover_Gap",
-                new Vector3(26.5f, 2.0f, 0f),
-                new Vector2(3.2f, h),
-                new Vector2(-1.6f, 0f),
-                new Vector2(1.6f, 0f),
-                2.0f);
+                "Mover_Assist",
+                new Vector3(48.6f, 2.15f, 0f),
+                new Vector2(2.6f, h),
+                new Vector2(-1.0f, 0f),
+                new Vector2(1.0f, 0f),
+                1.6f);
 
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_Finale_A", new Vector3(35.2f, 3.0f, 0f), new Vector2(1.7f, 0.45f), 1.1f, 0.9f, 0f, true);
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_Finale_B", new Vector3(37.2f, 3.15f, 0f), new Vector2(1.7f, 0.45f), 1.1f, 0.9f, 0.55f, false);
+            PlacePitSpan(roots.Hazards, kit.DeathZone, "Hazard_Pit_Cave", PlatRight(start.x, startW), PlatLeft(exitPad.x, exitW));
 
-            PlacePitSpan(roots.Hazards, kit.DeathZone, "Hazard_Pit_Cave", 6.5f, 40.5f);
-            PlaceFireOnPlatform(roots.Hazards, kit.Fire, "Hazard_Fire_Dash", 39.2f, topExit);
-            Place(roots.Collectibles, kit.SpeedBurst, "PowerUp_SpeedBurst", new Vector3(33.2f, topRise + 0.7f, 0f));
+            // One avoidable spike pack on Shelf A trailing edge.
+            PlaceSpikesOnEdge(roots.Hazards, kit.Spikes, "Hazard_Spikes_A", PlatRight(shelfA.x, shelfAW), topA);
 
-            PlaceEnemyOnPlatform(roots.Enemies, kit.Crawlbug, "Enemy_Crawlbug_A", mid.x, topMid);
-            PlaceEnemyOnPlatform(roots.Enemies, kit.Hopmite, "Enemy_Hopmite_A", rise.x - 0.8f, topRise);
+            // Single fire near exit entrance — Speed Burst sits on Shelf C with room to grab first.
+            Place(roots.Collectibles, kit.SpeedBurst, "PowerUp_SpeedBurst", new Vector3(shelfC.x - 0.8f, topC + 0.7f, 0f));
+            PlaceFireOnPlatform(roots.Hazards, kit.Fire, "Hazard_Fire_ExitGate", PlatLeft(exitPad.x, exitW) + 1.4f, topExit);
 
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 1.5f, 5f, topStart + 0.55f, 1.1f);
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 12f, 14.5f, topLedge + 0.6f, 1.1f);
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 21f, 24.5f, topMid + 0.6f, 1.2f);
-            Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(28.5f, 3.1f, 0f));
-            Place(roots.Collectibles, kit.Coin, "Coin_Secret_BlinkRoof", new Vector3(23f, topMid + 2.1f, 0f));
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 40f, 44f, topExit + 0.65f, 1.2f);
+            // One patrol only — wide Shelf B has walk-around space; no hopmite/spitter stack.
+            PlaceEnemyOnPlatform(roots.Enemies, kit.Crawlbug, "Enemy_Crawlbug_A", shelfB.x + 1.2f, topB);
 
-            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_A", new Vector3(12f, EnemyStandY(topLedge), 0f));
-            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(31f, EnemyStandY(topRise), 0f));
-            PlaceGoal(levelRoot, roots, kit.Exit, new Vector3(44.5f, topExit + 1.25f, 0f));
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 1.4f, 5.8f, topStart + 0.55f, 1.2f);
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 14.2f, 17.6f, topA + 0.55f, 1.15f);
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_Blink", new Vector3(8.1f, 1.35f, 0f));
+            Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(18.6f, 2.1f, 0f));
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 26.0f, 30.0f, topB + 0.55f, 1.2f);
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 38.2f, 42.0f, topC + 0.55f, 1.2f);
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 49.5f, 54.5f, topExit + 0.55f, 1.25f);
+
+            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_A", new Vector3(shelfA.x - 0.6f, EnemyStandY(topA), 0f));
+            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(shelfC.x - 1.0f, EnemyStandY(topC), 0f));
+
+            PlaceGoal(levelRoot, roots, kit.Exit, new Vector3(PlatRight(exitPad.x, exitW) - 1.5f, topExit + 1.15f, 0f));
         }
 
         private static void BuildLanternLockworks(LevelRoot levelRoot, ContentRoots roots, PrefabKit kit)
         {
-            // Switch puzzles: hold gate, timed latch, then shield fire hall.
+            // Puzzle-first lockworks: solid bridges between rooms (blink optional).
+            // Switches use latch modes (single-player safe). One crawlbug total.
             const float h = 0.55f;
-            SetBounds(roots.Bounds, new Vector2(62f, 26f), new Vector2(26f, 4f));
-            SetTransform(roots.Spawn, new Vector3(0.7f, 0.3f, 0f));
+            SetBounds(roots.Bounds, new Vector2(64f, 22f), new Vector2(27f, 2.5f));
+            SetTransform(roots.Spawn, new Vector3(0.8f, 0.25f, 0f));
 
-            var start = new Vector3(3f, -0.35f, 0f);
-            var roomA = new Vector3(12f, 0.6f, 0f);
-            var roomB = new Vector3(22f, 1.5f, 0f);
-            var hall = new Vector3(33f, 2.4f, 0f);
-            var exitPad = new Vector3(46f, 3.5f, 0f);
+            var start = new Vector3(3.2f, -0.4f, 0f);
+            var bridge1 = new Vector3(10.4f, 0.05f, 0f);
+            var roomA = new Vector3(16.8f, 0.5f, 0f);
+            var bridge2 = new Vector3(23.4f, 0.95f, 0f);
+            var roomB = new Vector3(30.2f, 1.4f, 0f);
+            var bridge3 = new Vector3(37.0f, 1.85f, 0f);
+            var hall = new Vector3(44.0f, 2.3f, 0f);
+            var bridge4 = new Vector3(50.8f, 2.7f, 0f);
+            var exitPad = new Vector3(57.5f, 3.05f, 0f);
 
-            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Start", start, new Vector2(7f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Lock_RoomA", roomA, new Vector2(6f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Lock_RoomB", roomB, new Vector2(6.5f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Hall", hall, new Vector2(8f, h));
-            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Exit", exitPad, new Vector2(8f, h));
+            const float startW = 7.5f;
+            const float bridge1W = 3.2f;
+            const float roomAW = 6.2f;
+            const float bridge2W = 3.2f;
+            const float roomBW = 6.4f;
+            const float bridge3W = 3.2f;
+            const float hallW = 7.5f;
+            const float bridge4W = 3.4f;
+            const float exitW = 7.5f;
+
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Start", start, new Vector2(startW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Bridge1", bridge1, new Vector2(bridge1W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_RoomA", roomA, new Vector2(roomAW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Bridge2", bridge2, new Vector2(bridge2W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_RoomB", roomB, new Vector2(roomBW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Bridge3", bridge3, new Vector2(bridge3W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Hall", hall, new Vector2(hallW, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Bridge4", bridge4, new Vector2(bridge4W, h));
+            PlaceSolid(roots.Platforms, kit.Solid, "Lock_Exit", exitPad, new Vector2(exitW, h));
 
             var topStart = PlatTop(start.y, h);
             var topA = PlatTop(roomA.y, h);
@@ -446,77 +677,104 @@ namespace BounderTrail.EditorTools
             var topHall = PlatTop(hall.y, h);
             var topExit = PlatTop(exitPad.y, h);
 
-            // Puzzle 1: hold switch opens gate to Room A.
-            var gate1 = PlaceGate(roots.Platforms, kit.Gate, "Gate_Hold", new Vector3(8.4f, topStart + 1.0f, 0f), new Vector2(0.7f, 2.2f));
+            // Puzzle 1: short timed latch opens path onto Bridge1 (hold mode is not solo-viable).
+            var gate1 = PlaceGate(
+                roots.Platforms,
+                kit.Gate,
+                "Gate_Intro",
+                new Vector3(PlatRight(start.x, startW) + 0.35f, topStart + 1.0f, 0f),
+                new Vector2(0.65f, 2.1f));
             PlaceSwitch(
                 roots.Platforms,
                 kit.Switch,
-                "Switch_Hold",
-                new Vector3(5.2f, topStart + 0.05f, 0f),
-                PressureSwitch.Mode.HoldWhileStanding,
-                0f,
+                "Switch_Intro",
+                new Vector3(5.0f, topStart + 0.05f, 0f),
+                PressureSwitch.Mode.LatchTimed,
+                5.5f,
                 gate1);
 
-            // Puzzle 2: timed latch switch + blink path into Room B.
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_Lock_A", new Vector3(16.4f, 1.0f, 0f), new Vector2(1.6f, 0.45f), 1.35f, 1.05f, 0f, true);
-            PlaceTimed(roots.Platforms, kit.Timed, "Blink_Lock_B", new Vector3(18.2f, 1.2f, 0f), new Vector2(1.6f, 0.45f), 1.35f, 1.05f, 0.65f, false);
-            var gate2 = PlaceGate(roots.Platforms, kit.Gate, "Gate_Timed", new Vector3(19.8f, topA + 1.05f, 0f), new Vector2(0.7f, 2.3f));
+            // Puzzle 2: timed latch on Room A → Bridge2. Optional blink coins above the solid bridge.
+            PlaceTimed(
+                roots.Platforms,
+                kit.Timed,
+                "Blink_Lock_A",
+                new Vector3(20.4f, 1.55f, 0f),
+                new Vector2(1.5f, 0.4f),
+                1.45f,
+                1.0f,
+                0f,
+                true);
+            PlaceTimed(
+                roots.Platforms,
+                kit.Timed,
+                "Blink_Lock_B",
+                new Vector3(21.8f, 1.7f, 0f),
+                new Vector2(1.5f, 0.4f),
+                1.45f,
+                1.0f,
+                0.65f,
+                false);
+            var gate2 = PlaceGate(
+                roots.Platforms,
+                kit.Gate,
+                "Gate_Timed",
+                new Vector3(PlatRight(roomA.x, roomAW) + 0.35f, topA + 1.0f, 0f),
+                new Vector2(0.65f, 2.2f));
             PlaceSwitch(
                 roots.Platforms,
                 kit.Switch,
                 "Switch_Timed",
-                new Vector3(13.5f, topA + 0.05f, 0f),
+                new Vector3(roomA.x - 1.4f, topA + 0.05f, 0f),
                 PressureSwitch.Mode.LatchTimed,
-                4.2f,
+                5.0f,
                 gate2);
 
-            // Puzzle 3: permanent latch opens hall gate; fire hall needs Glow Shield.
-            var gate3 = PlaceGate(roots.Platforms, kit.Gate, "Gate_Latch", new Vector3(27.6f, topB + 1.1f, 0f), new Vector2(0.75f, 2.5f));
+            // Puzzle 3: permanent latch opens Bridge3 into the fire hall.
+            var gate3 = PlaceGate(
+                roots.Platforms,
+                kit.Gate,
+                "Gate_Latch",
+                new Vector3(PlatRight(roomB.x, roomBW) + 0.35f, topB + 1.05f, 0f),
+                new Vector2(0.7f, 2.3f));
             PlaceSwitch(
                 roots.Platforms,
                 kit.Switch,
                 "Switch_Latch",
-                new Vector3(24.2f, topB + 0.05f, 0f),
+                new Vector3(roomB.x - 1.2f, topB + 0.05f, 0f),
                 PressureSwitch.Mode.LatchPermanent,
                 0f,
                 gate3);
 
-            Place(roots.Collectibles, kit.GlowShield, "PowerUp_GlowShield", new Vector3(29.5f, topHall + 0.75f, 0f));
-            PlaceFireOnPlatform(roots.Hazards, kit.Fire, "Hazard_Fire_Hall_A", 31.5f, topHall);
-            PlaceFireOnPlatform(roots.Hazards, kit.Fire, "Hazard_Fire_Hall_B", 34.5f, topHall);
+            // Glow Shield before a single fire patch (not a stacked fire gauntlet).
+            Place(roots.Collectibles, kit.GlowShield, "PowerUp_GlowShield", new Vector3(hall.x - 2.2f, topHall + 0.75f, 0f));
+            PlaceFireOnPlatform(roots.Hazards, kit.Fire, "Hazard_Fire_Hall", hall.x + 0.6f, topHall);
 
+            // Slow optional mover near Bridge4 — exit pad is already a solid hop away.
             PlaceMoving(
                 roots.Platforms,
                 kit.Moving,
-                "Mover_Finale",
-                new Vector3(40.5f, 3.0f, 0f),
-                new Vector2(3.4f, h),
-                new Vector2(-1.5f, 0f),
-                new Vector2(1.5f, 0f),
-                2.2f);
+                "Mover_Assist",
+                new Vector3(54.0f, 2.85f, 0f),
+                new Vector2(2.8f, h),
+                new Vector2(-1.0f, 0f),
+                new Vector2(1.0f, 0f),
+                1.55f);
 
-            var spike = Place(
-                roots.Hazards,
-                kit.MovingSpike,
-                "Hazard_MovingSpike_Finale",
-                new Vector3(43.5f, topExit + SpikeHalfHeight + 0.15f, 0f));
-            ConfigureMovingHazard(spike, new Vector2(-1.6f, 0f), new Vector2(1.6f, 0f), 2.3f);
+            PlacePitSpan(roots.Hazards, kit.DeathZone, "Hazard_Pit_Lock", PlatRight(start.x, startW), PlatLeft(exitPad.x, exitW));
 
-            PlacePitSpan(roots.Hazards, kit.DeathZone, "Hazard_Pit_Lock", 7f, 44f);
-            PlaceEnemyOnPlatform(roots.Enemies, kit.Spikewatch, "Enemy_Spikewatch_A", roomA.x + 1.5f, topA);
-            PlaceEnemyOnPlatform(roots.Enemies, kit.Spitter, "Enemy_Spitter_A", roomB.x + 1.2f, topB);
-            PlaceEnemyOnPlatform(roots.Enemies, kit.Crawlbug, "Enemy_Crawlbug_A", hall.x - 1.5f, topHall);
+            // One crawlbug on Room B far from the switch so the latch puzzle stays readable.
+            PlaceEnemyOnPlatform(roots.Enemies, kit.Crawlbug, "Enemy_Crawlbug_A", roomB.x + 1.8f, topB);
 
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 1.5f, 5f, topStart + 0.55f, 1.1f);
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 11f, 14.5f, topA + 0.6f, 1.15f);
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 21f, 25f, topB + 0.6f, 1.2f);
-            Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(36.5f, topHall + 0.8f, 0f));
-            Place(roots.Collectibles, kit.Coin, "Coin_Secret_SwitchAlcove", new Vector3(24.5f, topB + 1.9f, 0f));
-            PlaceCoinLine(roots.Collectibles, kit.Coin, 44f, 49f, topExit + 0.65f, 1.2f);
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 1.4f, 5.6f, topStart + 0.55f, 1.15f);
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 14.6f, 18.8f, topA + 0.55f, 1.2f);
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_Blink", new Vector3(21.1f, 2.35f, 0f));
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 28.0f, 32.4f, topB + 0.55f, 1.2f);
+            Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(hall.x + 2.4f, topHall + 0.8f, 0f));
+            PlaceCoinLine(roots.Collectibles, kit.Coin, 55.0f, 60.0f, topExit + 0.6f, 1.25f);
 
-            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_A", new Vector3(12f, EnemyStandY(topA), 0f));
-            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(33f, EnemyStandY(topHall), 0f));
-            PlaceGoal(levelRoot, roots, kit.Exit, new Vector3(48.5f, topExit + 1.3f, 0f));
+            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_A", new Vector3(roomA.x, EnemyStandY(topA), 0f));
+            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(hall.x - 1.5f, EnemyStandY(topHall), 0f));
+            PlaceGoal(levelRoot, roots, kit.Exit, new Vector3(PlatRight(exitPad.x, exitW) - 1.5f, topExit + 1.2f, 0f));
         }
 
         private static ContentRoots ResolveRoots(LevelRoot levelRoot)
@@ -726,10 +984,30 @@ namespace BounderTrail.EditorTools
             Place(parent, prefab, name, new Vector3(x, platformTop + FireHalfHeight, 0f));
         }
 
+        private static void PlaceSpikesOnEdge(
+            Transform parent,
+            GameObject prefab,
+            string name,
+            float platformRightEdge,
+            float platformTop)
+        {
+            if (prefab == null)
+            {
+                return;
+            }
+
+            var x = platformRightEdge - 0.55f;
+            var y = platformTop + SpikeHalfHeight;
+            Place(parent, prefab, name, new Vector3(x, y, 0f));
+        }
+
         private static void PlaceEnemyOnPlatform(Transform parent, GameObject prefab, string name, float x, float platformTop)
         {
             Place(parent, prefab, name, new Vector3(x, platformTop + EnemyStandOffset, 0f));
         }
+
+        private static float PlatLeft(float centerX, float width) => centerX - width * 0.5f;
+        private static float PlatRight(float centerX, float width) => centerX + width * 0.5f;
 
         private static void PlaceCoinLine(Transform parent, GameObject prefab, float startX, float endX, float y, float spacing)
         {

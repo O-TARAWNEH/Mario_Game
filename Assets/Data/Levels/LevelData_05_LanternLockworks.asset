@@ -16,5 +16,5 @@ MonoBehaviour:
   displayName: Lantern Lockworks
   sceneName: Level_05_LanternLockworks
   buildIndex: 4
-  designerNotes: Switch lockworks — pressure gates, timed latch, Glow Shield fire
-    hall, moving spike finale.
+  designerNotes: Switch lockworks on solid bridges; latch/timed gates; one crawlbug;
+    Glow Shield single fire.

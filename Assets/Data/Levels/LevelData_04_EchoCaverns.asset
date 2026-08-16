@@ -16,5 +16,5 @@ MonoBehaviour:
   displayName: Echo Caverns
   sceneName: Level_04_EchoCaverns
   buildIndex: 3
-  designerNotes: Puzzle timing cavern — blink platforms, bounce sync, mover gap,
-    Speed Burst fire dash.
+  designerNotes: Fair solid stepping cavern; optional blink secrets; one crawlbug;
+    Speed Burst soft fire gate.

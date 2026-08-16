@@ -31,14 +31,14 @@ namespace BounderTrail.EditorTools
             WireVictoryAudio();
             UpdateMainMenuControlsCopy();
 
-            // Rebuild layouts (includes new secret coins) + keep knight/physics repairs.
+            // Rebuild layouts via Phase 41 (Pip restored — knight no longer applied).
             Phase41GameplayRepairSetup.SetupGameplayRepair();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log(
                 $"{GameLog.ProjectPrefix}[Setup] Phase 42 complete polish ready — " +
-                "multi-key jump, coin persistence/1UPs, victory music, secret coins, R-restart.");
+                "multi-key jump, coin persistence/1UPs, victory music, secret coins, R-restart (Pip visual).");
         }
 
         private static void TunePlayerPrefab()

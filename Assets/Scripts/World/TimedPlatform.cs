@@ -31,6 +31,11 @@ namespace BounderTrail.World
         {
             _collider = GetComponent<Collider2D>();
             _sprite = GetComponent<SpriteRenderer>();
+            if (_sprite == null)
+            {
+                _sprite = GetComponentInChildren<SpriteRenderer>();
+            }
+
             if (_sprite != null)
             {
                 _baseColor = _sprite.color;

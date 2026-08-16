@@ -37,7 +37,8 @@ namespace BounderTrail.EditorTools
 
         private static readonly (string prefab, string sprite)[] SimplePrefabSprites =
         {
-            // Player art is owned by Phase 41 (knight). Do not overwrite with Pip.
+            // Player art is Pip (Phase 33). Knight swap was reverted.
+            ("Assets/Prefabs/Player/Player_Pip.prefab", "Assets/Art/Player/Pip_Idle_0.png"),
             ("Assets/Prefabs/Enemies/Enemy_Crawlbug.prefab", "Assets/Art/Enemies/Enemy_Crawlbug_0.png"),
             ("Assets/Prefabs/Enemies/Enemy_Dartling.prefab", "Assets/Art/Enemies/Enemy_Dartling_0.png"),
             ("Assets/Prefabs/Enemies/Enemy_Hopmite.prefab", "Assets/Art/Enemies/Enemy_Hopmite_0.png"),
@@ -347,8 +348,7 @@ namespace BounderTrail.EditorTools
                     }
                     else if (name.Contains("Pip") || name.Contains("Player"))
                     {
-                        var knight = LoadSprite("Assets/Art/Player/Knight.png");
-                        AssignSimple(sr, knight != null ? "Assets/Art/Player/Knight.png" : "Assets/Art/Player/Pip_Idle_0.png");
+                        AssignSimple(sr, "Assets/Art/Player/Pip_Idle_0.png");
                     }
                 }
 

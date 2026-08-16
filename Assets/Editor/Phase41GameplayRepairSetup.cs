@@ -38,8 +38,8 @@ namespace BounderTrail.EditorTools
         [MenuItem("Bounder Trail/Phase 41/Setup Gameplay Repair")]
         public static void SetupGameplayRepair()
         {
-            ImportKnightSprite();
-            ApplyKnightToPlayer();
+            // Keep knight art on disk if present, but restore Pip as the playable character.
+            RestorePipPlayer();
             HardenHazardPrefabs();
 
             // Rebuild authored layouts so platforms, enemies, coins, and hazards match again.
@@ -58,13 +58,13 @@ namespace BounderTrail.EditorTools
                 }
             }
 
-            // Re-apply knight after visual upgrade so Pip art generation cannot overwrite it.
-            ApplyKnightToPlayer();
+            // Ensure Pip wins after visual upgrade / scene wiring.
+            RestorePipPlayer();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log(
-                $"{GameLog.ProjectPrefix}[Setup] Phase 41 ready — knight player, " +
+                $"{GameLog.ProjectPrefix}[Setup] Phase 41 ready — Pip player restored, " +
                 "level layouts rebuilt, platforms hardened, ResumeButton punch safe.");
         }
 
@@ -253,6 +253,211 @@ namespace BounderTrail.EditorTools
             var max = Mathf.Max(c.r, Mathf.Max(c.g, c.b));
             var min = Mathf.Min(c.r, Mathf.Min(c.g, c.b));
             return max - min <= 18 && min >= 175;
+        }
+
+        private static void RestorePipPlayer()
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/Player/Pip_Idle_0.png");
+            if (sprite == null)
+            {
+                Debug.LogError($"{GameLog.ProjectPrefix}[Setup] Pip_Idle_0 sprite missing.");
+                return;
+            }
+
+            if (!File.Exists(PlayerPrefabPath))
+            {
+                Debug.LogError($"{GameLog.ProjectPrefix}[Setup] Missing {PlayerPrefabPath}");
+                return;
+            }
+
+            var controllerAsset = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
+                "Assets/Animations/Player/Anim_Pip.controller");
+
+            var root = PrefabUtility.LoadPrefabContents(PlayerPrefabPath);
+            try
+            {
+                var visual = root.transform.Find("Visual");
+                if (visual != null)
+                {
+                    Object.DestroyImmediate(visual.gameObject);
+                }
+
+                var visualRenderer = root.GetComponent<SpriteRenderer>();
+                if (visualRenderer == null)
+                {
+                    visualRenderer = root.AddComponent<SpriteRenderer>();
+                }
+
+                visualRenderer.sprite = sprite;
+                visualRenderer.color = Color.white;
+                visualRenderer.sortingOrder = 10;
+                visualRenderer.drawMode = SpriteDrawMode.Simple;
+                visualRenderer.flipX = false;
+                visualRenderer.flipY = false;
+
+                var animator = root.GetComponent<Animator>();
+                if (animator != null)
+                {
+                    animator.enabled = true;
+                    if (controllerAsset != null)
+                    {
+                        animator.runtimeAnimatorController = controllerAsset;
+                    }
+                }
+
+                var playerAnimator = root.GetComponent<PlayerAnimator>();
+                if (playerAnimator != null)
+                {
+                    playerAnimator.enabled = true;
+                }
+
+                var capsule = root.GetComponent<CapsuleCollider2D>();
+                if (capsule != null)
+                {
+                    capsule.direction = CapsuleDirection2D.Vertical;
+                    capsule.size = new Vector2(0.7f, 0.95f);
+                    capsule.offset = Vector2.zero;
+                    capsule.isTrigger = false;
+                }
+
+                var groundCheck = root.transform.Find("GroundCheck");
+                if (groundCheck != null)
+                {
+                    groundCheck.localPosition = new Vector3(0f, -0.48f, 0f);
+                }
+
+                var controller = root.GetComponent<PlayerController>();
+                if (controller != null)
+                {
+                    var so = new SerializedObject(controller);
+                    so.FindProperty("spriteRenderer").objectReferenceValue = visualRenderer;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                var hurt = root.GetComponent<PlayerHurtFeedback>();
+                if (hurt != null)
+                {
+                    var so = new SerializedObject(hurt);
+                    so.FindProperty("spriteRenderer").objectReferenceValue = visualRenderer;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                var powerFx = root.GetComponent<PlayerPowerUpFeedback>();
+                if (powerFx != null)
+                {
+                    var so = new SerializedObject(powerFx);
+                    so.FindProperty("spriteRenderer").objectReferenceValue = visualRenderer;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                var squash = root.GetComponent<PlayerSquashStretch>();
+                if (squash != null)
+                {
+                    // Avoid scaling the physics root (shrinks colliders).
+                    squash.enabled = false;
+                }
+
+                EditorUtility.SetDirty(root);
+                PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            for (var i = 0; i < AllGameplayScenes.Length; i++)
+            {
+                if (File.Exists(AllGameplayScenes[i]))
+                {
+                    ApplyPipInScene(AllGameplayScenes[i], sprite, controllerAsset);
+                }
+            }
+        }
+
+        private static void ApplyPipInScene(
+            string scenePath,
+            Sprite sprite,
+            RuntimeAnimatorController controllerAsset)
+        {
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            var changed = false;
+            var players = Object.FindObjectsByType<PlayerController>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            for (var p = 0; p < players.Length; p++)
+            {
+                var player = players[p];
+                if (player == null)
+                {
+                    continue;
+                }
+
+                var visual = player.transform.Find("Visual");
+                if (visual != null)
+                {
+                    Object.DestroyImmediate(visual.gameObject);
+                    changed = true;
+                }
+
+                var sr = player.GetComponent<SpriteRenderer>();
+                if (sr == null)
+                {
+                    sr = player.gameObject.AddComponent<SpriteRenderer>();
+                }
+
+                sr.sprite = sprite;
+                sr.color = Color.white;
+                sr.sortingOrder = 10;
+                changed = true;
+
+                var animator = player.GetComponent<Animator>();
+                if (animator != null)
+                {
+                    animator.enabled = true;
+                    if (controllerAsset != null)
+                    {
+                        animator.runtimeAnimatorController = controllerAsset;
+                    }
+
+                    changed = true;
+                }
+
+                var playerAnimator = player.GetComponent<PlayerAnimator>();
+                if (playerAnimator != null)
+                {
+                    playerAnimator.enabled = true;
+                    changed = true;
+                }
+
+                var capsule = player.GetComponent<CapsuleCollider2D>();
+                if (capsule != null)
+                {
+                    capsule.size = new Vector2(0.7f, 0.95f);
+                    capsule.offset = Vector2.zero;
+                    changed = true;
+                }
+
+                var groundCheck = player.transform.Find("GroundCheck");
+                if (groundCheck != null)
+                {
+                    groundCheck.localPosition = new Vector3(0f, -0.48f, 0f);
+                    changed = true;
+                }
+
+                var squash = player.GetComponent<PlayerSquashStretch>();
+                if (squash != null && squash.enabled)
+                {
+                    squash.enabled = false;
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene, scenePath);
+            }
         }
 
         private static void ApplyKnightToPlayer()
