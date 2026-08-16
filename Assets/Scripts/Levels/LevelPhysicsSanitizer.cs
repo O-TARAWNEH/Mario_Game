@@ -1,9 +1,10 @@
 // Filename: LevelPhysicsSanitizer.cs
 // Folder: Assets/Scripts/Levels/
-// Purpose: Strips stray tilemap colliders and corrects known bad level geometry at runtime.
-// Dependencies: LevelRoot, SolidPlatform, MovingPlatform
+// Purpose: Strips stray tilemap colliders and hardens platform / player physics at runtime.
+// Dependencies: LevelRoot, SolidPlatform, PlatformPiece, MovingPlatform
 
 using BounderTrail.Core;
+using BounderTrail.Player;
 using BounderTrail.World;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -11,10 +12,14 @@ using UnityEngine.Tilemaps;
 namespace BounderTrail.Levels
 {
     /// <summary>
-    /// Removes invisible collision left by legacy tilemaps and duplicate landing solids.
+    /// Removes invisible collision left by legacy tilemaps, duplicate landing solids,
+    /// and re-asserts solid Ground collision so characters cannot float through platforms.
     /// </summary>
     public static class LevelPhysicsSanitizer
     {
+        private const string GroundLayerName = "Ground";
+        private const string GroundTag = "Ground";
+
         public static void Sanitize(LevelRoot root)
         {
             if (root == null)
@@ -24,41 +29,10 @@ namespace BounderTrail.Levels
 
             StripTilemapPhysics(root.TilemapRoot);
             RemoveDuplicateLandingSolids(root.PlatformsRoot);
-            FixSkybridgePlatforms(root);
-            ClampOversizedBridgeColliders(root.PlatformsRoot);
-        }
-
-        private static void ClampOversizedBridgeColliders(Transform platformsRoot)
-        {
-            if (platformsRoot == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < platformsRoot.childCount; i++)
-            {
-                var child = platformsRoot.GetChild(i);
-                if (child == null || !child.name.StartsWith("Bridge_"))
-                {
-                    continue;
-                }
-
-                var sprite = child.GetComponent<SpriteRenderer>();
-                var box = child.GetComponent<BoxCollider2D>();
-                if (sprite == null || box == null)
-                {
-                    continue;
-                }
-
-                if (box.size.x > 5f)
-                {
-                    var height = Mathf.Max(box.size.y, 0.55f);
-                    var width = child.name == "Bridge_A" ? 3.5f
-                        : child.name == "Bridge_B" ? 3.2f
-                        : 3.2f;
-                    ApplyPlatformSize(child.gameObject, new Vector2(width, height));
-                }
-            }
+            HardenSolidPlatforms(root.PlatformsRoot);
+            HardenPlayerPhysics();
+            // Do not rewrite platform positions/sizes at runtime — that desyncs coins,
+            // checkpoints, and power-ups from the authored scene layout (Level 3 bug).
         }
 
         private static void StripTilemapPhysics(Transform tilemapRoot)
@@ -122,77 +96,85 @@ namespace BounderTrail.Levels
             }
         }
 
-        private static void FixSkybridgePlatforms(LevelRoot root)
+        private static void HardenSolidPlatforms(Transform platformsRoot)
         {
-            if (root.LevelId != "level_03")
+            if (platformsRoot == null)
             {
                 return;
             }
 
-            ResizeNamedPlatform(root.PlatformsRoot, "Bridge_A", new Vector2(3.5f, 0.55f), new Vector3(10f, 0.5f, 0f));
-            ResizeNamedPlatform(root.PlatformsRoot, "Bridge_B", new Vector2(3.2f, 0.55f), new Vector3(16.5f, 1.6f, 0f));
-            ResizeNamedPlatform(root.PlatformsRoot, "Bridge_C", new Vector2(3.2f, 0.55f), new Vector3(33.5f, 3.5f, 0f));
-
-            var mover = FindNamedTransform(root.PlatformsRoot, "Platform_Moving_A");
-            if (mover != null)
-            {
-                mover.localPosition = new Vector3(25f, 2.4f, 0f);
-                ApplyPlatformSize(mover.gameObject, new Vector2(4.5f, 0.55f));
-
-                var moving = mover.GetComponent<MovingPlatform>();
-                if (moving != null)
-                {
-                    moving.ConfigurePath(new Vector2(-2.025f, 0f), new Vector2(2.025f, 0f), 2.1f);
-                }
-            }
-        }
-
-        private static Transform FindNamedTransform(Transform root, string objectName)
-        {
-            if (root == null)
-            {
-                return null;
-            }
-
-            for (var i = 0; i < root.childCount; i++)
-            {
-                var child = root.GetChild(i);
-                if (child.name == objectName)
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
-        private static void ResizeNamedPlatform(Transform platformsRoot, string objectName, Vector2 size, Vector3 position)
-        {
-            var platform = FindNamedTransform(platformsRoot, objectName);
-            if (platform == null)
+            var groundLayer = LayerMask.NameToLayer(GroundLayerName);
+            if (groundLayer < 0)
             {
                 return;
             }
 
-            platform.localPosition = position;
-            ApplyPlatformSize(platform.gameObject, size);
-        }
-
-        private static void ApplyPlatformSize(GameObject go, Vector2 worldSize)
-        {
-            go.transform.localScale = Vector3.one;
-
-            var sprite = go.GetComponent<SpriteRenderer>();
-            if (sprite != null)
+            var solids = platformsRoot.GetComponentsInChildren<SolidPlatform>(true);
+            var fixedCount = 0;
+            for (var i = 0; i < solids.Length; i++)
             {
-                sprite.drawMode = SpriteDrawMode.Tiled;
-                sprite.size = worldSize;
+                var solid = solids[i];
+                if (solid == null)
+                {
+                    continue;
+                }
+
+                var go = solid.gameObject;
+                if (go.layer != groundLayer)
+                {
+                    go.layer = groundLayer;
+                    fixedCount++;
+                }
+
+                if (!go.CompareTag(GroundTag))
+                {
+                    go.tag = GroundTag;
+                }
+
+                var col = go.GetComponent<Collider2D>();
+                if (col == null)
+                {
+                    continue;
+                }
+
+                // Timed platforms manage their own enable cycle; only force solid contact.
+                if (go.GetComponent<TimedPlatform>() == null)
+                {
+                    col.enabled = true;
+                }
+
+                col.isTrigger = false;
             }
 
-            var box = go.GetComponent<BoxCollider2D>();
-            if (box != null)
+            if (fixedCount > 0)
             {
-                box.size = worldSize;
+                GameLog.Info("Level", $"Hardened {fixedCount} solid platform(s) onto Ground layer.");
+            }
+        }
+
+        private static void HardenPlayerPhysics()
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                return;
+            }
+
+            var body = player.GetComponent<Rigidbody2D>();
+            if (body == null)
+            {
+                return;
+            }
+
+            body.bodyType = RigidbodyType2D.Dynamic;
+            body.simulated = true;
+            body.freezeRotation = true;
+            body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            var controller = player.GetComponent<PlayerController>();
+            if (controller == null && body.gravityScale < 0.1f)
+            {
+                body.gravityScale = 3.2f;
             }
         }
     }

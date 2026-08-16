@@ -1,7 +1,7 @@
 // Filename: PlayerVisualJuice.cs
 // Folder: Assets/Scripts/Player/
-// Purpose: Jump/land/hit/death/power-up visual bursts + camera shake (Phase 26).
-// Dependencies: PlayerController, PlayerHealth, PlayerDeath, PlayerPowerUps, CameraShake2D, SimpleBurstVfx
+// Purpose: Jump/land/hit/death/power-up visual bursts + camera shake + hitstop (Phase 26/38).
+// Dependencies: PlayerController, PlayerHealth, PlayerDeath, PlayerPowerUps, CameraShake2D, SimpleBurstVfx, HitStop
 
 using BounderTrail.CameraSystem;
 using BounderTrail.Items;
@@ -30,7 +30,9 @@ namespace BounderTrail.Player
         [SerializeField] private float landDustSize = 0.9f;
         [SerializeField] private float jumpDustSize = 0.55f;
         [SerializeField] private float hurtShakeAmplitude = 0.18f;
-        [SerializeField] private float deathShakeAmplitude = 0.32f;
+        [SerializeField] private float deathShakeAmplitude = 0.38f;
+        [SerializeField] private float hurtHitStop = 0.045f;
+        [SerializeField] private float deathHitStop = 0.08f;
         [SerializeField] private bool enableJumpPuff = true;
 
         private void Awake()
@@ -117,8 +119,17 @@ namespace BounderTrail.Player
 
         private void OnLanded()
         {
+            var impact = playerController != null ? playerController.LastLandingSpeed : 6f;
+            // Soft landings stay quiet; hard landings get a bigger dust puff.
+            if (impact < 3.5f)
+            {
+                return;
+            }
+
+            var size = Mathf.Lerp(landDustSize * 0.55f, landDustSize * 1.35f, Mathf.InverseLerp(3.5f, 16f, impact));
+            var particles = impact > 10f ? 28 : 18;
             var pos = transform.position + new Vector3(0f, -0.4f, 0f);
-            SimpleBurstVfx.Spawn(dustSprite, pos, new Color(1f, 1f, 1f, 0.8f), 0.22f, 0.35f, landDustSize, 18);
+            SimpleBurstVfx.Spawn(dustSprite, pos, new Color(1f, 1f, 1f, 0.8f), 0.22f, 0.35f, size, particles);
         }
 
         private void OnDamaged(int amount, int remainingHealth)
@@ -137,6 +148,7 @@ namespace BounderTrail.Player
                 1.2f,
                 26);
             Shake(hurtShakeAmplitude, 0.16f, 0.85f);
+            HitStop.Pulse(hurtHitStop);
         }
 
         private void OnDied()
@@ -146,10 +158,11 @@ namespace BounderTrail.Player
                 transform.position,
                 new Color(0.7f, 0.75f, 0.9f, 0.85f),
                 0.35f,
-                0.5f,
-                1.45f,
-                26);
-            Shake(deathShakeAmplitude, 0.28f, 1f);
+                0.55f,
+                1.65f,
+                28);
+            Shake(deathShakeAmplitude, 0.32f, 1f);
+            HitStop.Pulse(deathHitStop, 0.03f);
         }
 
         private void OnPowerUpActivated(PowerUpKind kind)

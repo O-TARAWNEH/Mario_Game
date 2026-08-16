@@ -184,7 +184,7 @@ namespace BounderTrail.EditorTools
             if (bodyText != null)
             {
                 bodyText.text =
-                    "Controls\n\nMove: A / D  or  Arrow Keys\nJump: Space\nRun: Left Shift\nPause: Esc";
+                    "Controls\n\nMove: A / D\nJump: Space / W / Up\nRun: Left Shift\nPause: Esc\nRestart: R";
                 bodyText.fontSize = BodyFontSize;
                 bodyText.lineSpacing = 1.05f;
             }

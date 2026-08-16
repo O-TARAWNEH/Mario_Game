@@ -38,7 +38,7 @@ namespace BounderTrail.Player
 
             if (spriteRenderer == null)
             {
-                spriteRenderer = GetComponent<SpriteRenderer>();
+                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             }
 
             if (spriteRenderer != null)

@@ -193,10 +193,21 @@ namespace BounderTrail.Audio
                 case GameStateId.Boot:
                     musicSystem.Play(MusicId.Menu);
                     break;
+                case GameStateId.LevelComplete:
+                    // Campaign finale uses victory music; mid-campaign keeps gameplay bed under the jingle SFX.
+                    if (LevelLoader.Instance != null && !LevelLoader.Instance.HasNextLevel)
+                    {
+                        musicSystem.Play(MusicId.Victory);
+                    }
+                    else
+                    {
+                        musicSystem.Play(MusicId.Gameplay);
+                    }
+
+                    break;
                 case GameStateId.Gameplay:
                 case GameStateId.Pause:
                 case GameStateId.GameOver:
-                case GameStateId.LevelComplete:
                     musicSystem.Play(MusicId.Gameplay);
                     break;
             }

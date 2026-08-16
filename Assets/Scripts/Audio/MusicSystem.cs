@@ -18,6 +18,7 @@ namespace BounderTrail.Audio
         [Header("Clips")]
         [SerializeField] private AudioClip menuMusic;
         [SerializeField] private AudioClip gameplayMusic;
+        [SerializeField] private AudioClip victoryMusic;
 
         private MusicId _current = MusicId.None;
         private float _volume = 1f;
@@ -51,7 +52,16 @@ namespace BounderTrail.Audio
             var clip = ResolveClip(id);
             if (clip == null)
             {
-                return;
+                // Fall back to gameplay if victory clip is missing.
+                if (id == MusicId.Victory)
+                {
+                    clip = gameplayMusic;
+                }
+
+                if (clip == null)
+                {
+                    return;
+                }
             }
 
             if (_current == id && musicSource.isPlaying && musicSource.clip == clip)
@@ -62,7 +72,7 @@ namespace BounderTrail.Audio
 
             _current = id;
             musicSource.clip = clip;
-            musicSource.loop = true;
+            musicSource.loop = id != MusicId.Victory;
             musicSource.volume = _volume;
             musicSource.Play();
         }
@@ -76,10 +86,14 @@ namespace BounderTrail.Audio
             }
         }
 
-        public void AssignClips(AudioClip menu, AudioClip gameplay)
+        public void AssignClips(AudioClip menu, AudioClip gameplay, AudioClip victory = null)
         {
             menuMusic = menu;
             gameplayMusic = gameplay;
+            if (victory != null)
+            {
+                victoryMusic = victory;
+            }
         }
 
         private AudioClip ResolveClip(MusicId id)
@@ -88,6 +102,7 @@ namespace BounderTrail.Audio
             {
                 MusicId.Menu => menuMusic,
                 MusicId.Gameplay => gameplayMusic,
+                MusicId.Victory => victoryMusic != null ? victoryMusic : gameplayMusic,
                 _ => null
             };
         }

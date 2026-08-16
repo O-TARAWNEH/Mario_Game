@@ -27,6 +27,10 @@ namespace BounderTrail.Audio
         [Header("Catalog")]
         [SerializeField] private SfxEntry[] entries = Array.Empty<SfxEntry>();
 
+        [Header("Variation")]
+        [SerializeField] private bool enablePitchVariation = true;
+        [SerializeField] private float pitchVariation = 0.06f;
+
         private float _volume = 1f;
 
         private void Awake()
@@ -49,7 +53,17 @@ namespace BounderTrail.Audio
             }
 
             var scale = entry.volumeScale <= 0f ? 1f : entry.volumeScale;
-            sfxSource.PlayOneShot(entry.clip, _volume * scale);
+            if (enablePitchVariation && pitchVariation > 0f)
+            {
+                var pitch = 1f + UnityEngine.Random.Range(-pitchVariation, pitchVariation);
+                sfxSource.pitch = pitch;
+                sfxSource.PlayOneShot(entry.clip, _volume * scale);
+                sfxSource.pitch = 1f;
+            }
+            else
+            {
+                sfxSource.PlayOneShot(entry.clip, _volume * scale);
+            }
         }
 
         public void AssignClip(SfxId id, AudioClip clip, float volumeScale = 1f)

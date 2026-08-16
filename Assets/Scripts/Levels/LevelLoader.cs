@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using BounderTrail.Core;
 using BounderTrail.Data;
+using BounderTrail.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -208,6 +209,8 @@ namespace BounderTrail.Levels
             LevelLoadStarted?.Invoke(data);
 
             Time.timeScale = 1f;
+            yield return ScreenFade.FadeOut(0.18f);
+
             var operation = SceneManager.LoadSceneAsync(data.SceneName);
             if (operation == null)
             {
@@ -217,6 +220,7 @@ namespace BounderTrail.Levels
                     GameStateManager.Instance.NotifyLevelLoadFailed();
                 }
 
+                yield return ScreenFade.FadeIn(0.12f);
                 _isLoading = false;
                 yield break;
             }
@@ -233,6 +237,7 @@ namespace BounderTrail.Levels
             }
 
             LevelLoadCompleted?.Invoke(data);
+            yield return ScreenFade.FadeIn(0.22f);
             _isLoading = false;
 
             if (logLoads)

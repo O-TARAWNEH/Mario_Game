@@ -38,6 +38,9 @@ namespace BounderTrail.Enemies
         [SerializeField] private EnemyStateId initialState = EnemyStateId.Patrol;
         [SerializeField] private int initialFacing = -1;
 
+        [Header("Debug")]
+        [SerializeField] private bool logStateChanges;
+
         private float _stateTimer;
         private float _lostPlayerTimer;
         private EnemyStateId _state = EnemyStateId.Idle;
@@ -152,7 +155,10 @@ namespace BounderTrail.Enemies
                     break;
             }
 
-            GameLog.Info("Enemy", $"{name} -> {_state}");
+            if (logStateChanges)
+            {
+                GameLog.Info("Enemy", $"{name} -> {_state}");
+            }
         }
 
         private void TickIdle()

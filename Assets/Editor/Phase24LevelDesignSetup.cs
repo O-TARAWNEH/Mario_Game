@@ -151,7 +151,7 @@ namespace BounderTrail.EditorTools
             AssetDatabase.Refresh();
             Debug.Log(
                 $"{GameLog.ProjectPrefix}[Setup] Phase 24 complete: authored {Campaign.Length} campaign levels " +
-                "(Lumen Meadows → Cascade Cliffs → Skybridge Spire). Secrets not included.");
+                "(Lumen Meadows → Cascade Cliffs → Skybridge Spire). Includes optional secret coins.");
         }
 
         private static PrefabKit LoadPrefabs()
@@ -414,6 +414,9 @@ namespace BounderTrail.EditorTools
             Place(roots.Collectibles, kit.Coin, "Coin_Gap_Arc", new Vector3((gapLeft + gapRight) * 0.5f, -0.4f, 0f));
             PlaceCoinLine(roots.Collectibles, kit.Coin, 14f, 22f, -1.1f, 1.5f);
             Place(roots.Collectibles, kit.Coin, "Coin_High", new Vector3(28f, 0.2f, 0f));
+            // Secret: high hop onto the rise — rewards exploration without gating progress.
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_Roof", new Vector3(29.5f, 1.35f, 0f));
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_ExitLedge", new Vector3(35.5f, 1.1f, 0f));
             Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(24f, -0.3f, 0f));
 
             Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_Early", new Vector3(14.5f, EnemyStandY(groundTop), 0f));
@@ -479,9 +482,11 @@ namespace BounderTrail.EditorTools
             Place(roots.Collectibles, kit.SpeedBurst, "PowerUp_SpeedBurst", new Vector3(15f, topB + 0.8f, 0f));
             PlaceCoinLine(roots.Collectibles, kit.Coin, 19f, 23f, topC + 0.5f, 1.3f);
             Place(roots.Collectibles, kit.Coin, "Coin_OneWay", new Vector3(22f, 4.6f, 0f));
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_OneWayChain", new Vector3(23.2f, 5.4f, 0f));
             PlaceCoinLine(roots.Collectibles, kit.Coin, 28f, 33f, topD + 0.5f, 1.4f);
             Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(32f, topD + 0.6f, 0f));
             PlaceCoinLine(roots.Collectibles, kit.Coin, 38f, 47f, topExit + 0.5f, 1.5f);
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_CliffOverlook", new Vector3(40.5f, topE + 1.6f, 0f));
 
             Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_A", new Vector3(18f, EnemyStandY(topC), 0f));
             Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(33f, EnemyStandY(topD), 0f));
@@ -523,7 +528,7 @@ namespace BounderTrail.EditorTools
             PlaceSolid(roots.Platforms, kit.Solid, "Spire_Exit", spireExit, new Vector2(spireExitW, bridgeH));
 
             PlaceTiledPlatform(roots.Platforms, kit.OneWay, "OneWay_Assist", new Vector3(13.5f, 3.0f, 0f), new Vector2(2.6f, 0.35f));
-            Place(roots.Platforms, kit.Bounce, "Bounce_Recover", new Vector3(29f, PlatTop(bridgeB.y, bridgeH) - 0.2f, 0f));
+            Place(roots.Platforms, kit.Bounce, "Bounce_Recover", new Vector3(31.2f, PlatTop(bridgeC.y, bridgeH) - 0.2f, 0f));
 
             var moverPathHalf = landingW * 0.45f;
             PlaceMovingPlatform(
@@ -563,14 +568,16 @@ namespace BounderTrail.EditorTools
             PlaceCoinLine(roots.Collectibles, kit.Coin, 9f, 12f, topA + 0.6f, 1.1f);
             Place(roots.Collectibles, kit.SpeedBurst, "PowerUp_SpeedBurst", new Vector3(16.5f, topB + 0.7f, 0f));
             Place(roots.Collectibles, kit.Coin, "Coin_Mover", new Vector3(landing.x, topLanding + 1.2f, 0f));
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_MoverArc", new Vector3(landing.x + 1.4f, topLanding + 2.4f, 0f));
             PlaceCoinLine(roots.Collectibles, kit.Coin, 31f, 36f, topC + 0.6f, 1.2f);
             Place(roots.Collectibles, kit.HeartDrop, "PowerUp_HeartDrop", new Vector3(26f, topLanding + 0.8f, 0f));
             PlaceCoinLine(roots.Collectibles, kit.Coin, 40f, 46f, topArena + 0.7f, 1.3f);
             Place(roots.Collectibles, kit.GlowShield, "PowerUp_GlowShield", new Vector3(44f, topArena + 0.8f, 0f));
             Place(roots.Collectibles, kit.Coin, "Coin_Exit", new Vector3(52f, topExit + 0.9f, 0f));
+            Place(roots.Collectibles, kit.Coin, "Coin_Secret_ArenaRoof", new Vector3(41.5f, topArena + 2.2f, 0f));
 
             Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_A", new Vector3(15.5f, EnemyStandY(topB), 0f));
-            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(31f, EnemyStandY(topLanding), 0f));
+            Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_B", new Vector3(bridgeC.x, EnemyStandY(topC), 0f));
             Place(roots.Checkpoints, kit.Checkpoint, "Checkpoint_C", new Vector3(43f, EnemyStandY(topArena), 0f));
 
             PlaceDecorCluster(roots.Decorations, "Decor_Spire_A", new Vector3(8f, topA, 0f), DecorTheme.Spire);

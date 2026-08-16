@@ -22,6 +22,8 @@ namespace BounderTrail.Audio
         // Phase 31 — distinct power-up feedback (existing clips on disk).
         PowerUpHeart = 9,
         PowerUpShield = 10,
-        PowerUpSpeed = 11
+        PowerUpSpeed = 11,
+        // Phase 42 — milestone / victory feedback
+        BonusLife = 12
     }
 }

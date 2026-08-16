@@ -13,7 +13,6 @@ using BounderTrail.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 
 namespace BounderTrail.EditorTools
 {
@@ -38,7 +37,7 @@ namespace BounderTrail.EditorTools
 
         private static readonly (string prefab, string sprite)[] SimplePrefabSprites =
         {
-            ("Assets/Prefabs/Player/Player_Pip.prefab", "Assets/Art/Player/Pip_Idle_0.png"),
+            // Player art is owned by Phase 41 (knight). Do not overwrite with Pip.
             ("Assets/Prefabs/Enemies/Enemy_Crawlbug.prefab", "Assets/Art/Enemies/Enemy_Crawlbug_0.png"),
             ("Assets/Prefabs/Enemies/Enemy_Dartling.prefab", "Assets/Art/Enemies/Enemy_Dartling_0.png"),
             ("Assets/Prefabs/Enemies/Enemy_Hopmite.prefab", "Assets/Art/Enemies/Enemy_Hopmite_0.png"),
@@ -348,7 +347,8 @@ namespace BounderTrail.EditorTools
                     }
                     else if (name.Contains("Pip") || name.Contains("Player"))
                     {
-                        AssignSimple(sr, "Assets/Art/Player/Pip_Idle_0.png");
+                        var knight = LoadSprite("Assets/Art/Player/Knight.png");
+                        AssignSimple(sr, knight != null ? "Assets/Art/Player/Knight.png" : "Assets/Art/Player/Pip_Idle_0.png");
                     }
                 }
 
@@ -510,33 +510,40 @@ namespace BounderTrail.EditorTools
             so.FindProperty("nearLayer").objectReferenceValue = near.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
 
-            var cam = Object.FindAnyObjectByType<Camera>();
-            if (cam != null)
+            var camera = Object.FindAnyObjectByType<Camera>();
+            if (camera != null)
             {
-                cam.backgroundColor = cameraClear;
-                cam.orthographic = true;
-                EnsurePixelPerfect(cam.gameObject);
-                EditorUtility.SetDirty(cam);
+                camera.backgroundColor = cameraClear;
+                camera.orthographic = true;
+                camera.orthographicSize = ProjectConstants.GameplayOrthographicSize;
+                DisablePixelPerfect(camera.gameObject);
+                EditorUtility.SetDirty(camera);
             }
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, scenePath);
         }
 
-        private static void EnsurePixelPerfect(GameObject camGo)
+        private static void DisablePixelPerfect(GameObject camGo)
         {
-            var ppc = camGo.GetComponent<PixelPerfectCamera>();
-            if (ppc == null)
+            // URP Pixel Perfect draws a red Game-view warning when the display is
+            // smaller than its reference resolution. Prefer a stable ortho size instead.
+            var behaviours = camGo.GetComponents<Behaviour>();
+            for (var i = 0; i < behaviours.Length; i++)
             {
-                ppc = camGo.AddComponent<PixelPerfectCamera>();
-            }
+                var behaviour = behaviours[i];
+                if (behaviour == null)
+                {
+                    continue;
+                }
 
-            ppc.assetsPPU = ProjectConstants.GameplayAssetsPpu;
-            ppc.refResolutionX = ProjectConstants.GameplayRefResolutionX;
-            ppc.refResolutionY = ProjectConstants.GameplayRefResolutionY;
-            ppc.upscaleRT = true;
-            ppc.pixelSnapping = true;
-            EditorUtility.SetDirty(ppc);
+                var typeName = behaviour.GetType().Name;
+                if (typeName == "PixelPerfectCamera")
+                {
+                    behaviour.enabled = false;
+                    EditorUtility.SetDirty(behaviour);
+                }
+            }
         }
 
         private static GameObject CreateBackdropLayer(

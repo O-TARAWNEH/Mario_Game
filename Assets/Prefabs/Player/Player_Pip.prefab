@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 2021080734668155762}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.48, z: 0}
+  m_LocalPosition: {x: 0, y: -0.52, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -54,6 +54,7 @@ GameObject:
   - component: {fileID: 6380693826426581317}
   - component: {fileID: 3876049242564976266}
   - component: {fileID: 5721350685108160684}
+  - component: {fileID: 3700677740573193774}
   m_Layer: 8
   m_Name: Player_Pip
   m_TagString: Player
@@ -126,7 +127,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 19e3704d1f9f2a14b8e02582edff8873, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9870a272208b45388789ade203b18608, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -198,8 +199,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.7, y: 0.95}
+  m_Offset: {x: 0, y: 0.08}
+  m_Size: {x: 0.72, y: 1.15}
   m_Direction: 0
 --- !u!114 &4045233861318949346
 MonoBehaviour:
@@ -246,18 +247,22 @@ MonoBehaviour:
   airControl: 0.82
   jumpForce: 16.2
   coyoteTime: 0.12
-  jumpBufferTime: 0.12
+  jumpBufferTime: 0.14
   jumpCutMultiplier: 0.48
   jumpCutGravityMultiplier: 2.35
-  gravity: 3.35
-  fallGravityMultiplier: 2.15
-  apexHangGravityMultiplier: 0.42
-  apexHangVelocityThreshold: 1.25
+  gravity: 3.45
+  fallGravityMultiplier: 2.35
+  apexHangGravityMultiplier: 0.72
+  apexHangVelocityThreshold: 0.85
   maximumFallSpeed: 24
   projectMoveOnSlope: 1
   groundedStickForce: 2.5
   horizontalAxis: Horizontal
-  jumpButton: Jump
+  jumpKeys:
+  - 32
+  - 119
+  - 273
+  jumpKey: 32
   runKey: 304
 --- !u!95 &5463528155511327480
 Animator:
@@ -267,9 +272,9 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4191536177848962152}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 297a5a4f483fd16498526ea489149344, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -306,7 +311,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4191536177848962152}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 44b1636075558d34cb91e84d8158aea5, type: 3}
   m_Name: 
@@ -430,4 +435,25 @@ MonoBehaviour:
   jumpDustSize: 0.55
   hurtShakeAmplitude: 0.18
   deathShakeAmplitude: 0.32
+  hurtHitStop: 0.045
+  deathHitStop: 0.08
   enableJumpPuff: 1
+--- !u!114 &3700677740573193774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4191536177848962152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 905336ef669732b4bbce2dbf139f3a45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.Player.PlayerSquashStretch
+  playerController: {fileID: 1859947612241495650}
+  visualRoot: {fileID: 3622884419510288927}
+  jumpStretchY: 1.18
+  jumpStretchX: 0.88
+  landSquashY: 0.78
+  landSquashX: 1.16
+  recoverDuration: 0.12

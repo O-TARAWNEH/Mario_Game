@@ -91,13 +91,19 @@ namespace BounderTrail.Player
             }
         }
 
-        private static void OnJumped()
+        private void OnJumped()
         {
             AudioManager.PlaySfx(SfxId.Jump);
         }
 
-        private static void OnLanded()
+        private void OnLanded()
         {
+            // Skip soft landings — reduces repetitive thud spam on tiny drops.
+            if (playerController != null && playerController.LastLandingSpeed < 3.5f)
+            {
+                return;
+            }
+
             AudioManager.PlaySfx(SfxId.Land);
         }
 

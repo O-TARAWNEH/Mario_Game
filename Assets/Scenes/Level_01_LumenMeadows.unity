@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 23925790}
   - component: {fileID: 23925789}
   - component: {fileID: 23925791}
+  - component: {fileID: 23925792}
   m_Layer: 0
   m_Name: ResumeButton
   m_TagString: Untagged
@@ -155,8 +156,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -20}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: 40}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &23925789
 MonoBehaviour:
@@ -240,6 +241,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &23925792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23925787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1001 &26590427
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -652,7 +667,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -660,8 +675,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Restart
 --- !u!222 &147608751
@@ -890,7 +905,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -898,8 +913,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Main Menu
 --- !u!222 &210151878
@@ -997,6 +1012,7 @@ GameObject:
   - component: {fileID: 234016153}
   - component: {fileID: 234016152}
   - component: {fileID: 234016154}
+  - component: {fileID: 234016155}
   m_Layer: 0
   m_Name: SettingsBackButton
   m_TagString: Untagged
@@ -1106,6 +1122,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &234016155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 234016150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1001 &268327600
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1245,7 +1275,7 @@ MonoBehaviour:
   levelCompleteRestartButton: {fileID: 1642615910}
   levelCompleteMainMenuButton: {fileID: 1521922264}
   levelCompleteNextButtonLabel: {fileID: 1338573208}
-  levelCompleteTitleText: {fileID: 0}
+  levelCompleteTitleText: {fileID: 2006291443}
   levelCompleteTitle: LEVEL COMPLETE
   campaignCompleteTitle: CAMPAIGN COMPLETE
   pauseAudioSettingsView: {fileID: 674018003}
@@ -1697,11 +1727,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 707987774}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 40}
-  m_SizeDelta: {x: 360, y: 28}
-  m_Pivot: {x: 0.5, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 110}
+  m_SizeDelta: {x: 900, y: 110}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &421465824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1724,7 +1754,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 22
+    m_FontSize: 36
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -1733,8 +1763,8 @@ MonoBehaviour:
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
-    m_VerticalOverflow: 0
-    m_LineSpacing: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1.15
   m_Text: 'Coins: 0   Score: 0'
 --- !u!222 &421465825
 CanvasRenderer:
@@ -2044,6 +2074,7 @@ GameObject:
   - component: {fileID: 522294594}
   - component: {fileID: 522294593}
   - component: {fileID: 522294595}
+  - component: {fileID: 522294596}
   m_Layer: 0
   m_Name: LevelCompleteNextButton
   m_TagString: Untagged
@@ -2068,8 +2099,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -20}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: -10}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &522294593
 MonoBehaviour:
@@ -2153,6 +2184,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &522294596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522294591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1 &540539369
 GameObject:
   m_ObjectHideFlags: 0
@@ -2212,7 +2257,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -2220,8 +2265,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Resume
 --- !u!222 &540539372
@@ -2743,10 +2788,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.FlowScreenSummary
   summaryText: {fileID: 421465824}
-  format: 'Coins: {0}   Score: {1}'
+  format: 'Coins  {0}
+
+    Score  {1}'
   campaignCompleteFormat: 'Campaign cleared!
 
-    Coins: {0}   Score: {1}'
+    Coins  {0}
+
+    Score  {1}'
 --- !u!1001 &727603678
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3389,7 +3438,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -3397,8 +3446,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Main Menu
 --- !u!222 &948525320
@@ -3823,7 +3872,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -3831,8 +3880,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Restart
 --- !u!222 &1044519143
@@ -3902,6 +3951,7 @@ GameObject:
   - component: {fileID: 1089217257}
   - component: {fileID: 1089217256}
   - component: {fileID: 1089217258}
+  - component: {fileID: 1089217259}
   m_Layer: 0
   m_Name: PauseMainMenuButton
   m_TagString: Untagged
@@ -3926,8 +3976,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -230}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: -260}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1089217256
 MonoBehaviour:
@@ -4011,6 +4061,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1089217259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1089217254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1 &1092139668
 GameObject:
   m_ObjectHideFlags: 0
@@ -4045,8 +4109,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 210}
-  m_SizeDelta: {x: 900, y: 80}
+  m_AnchoredPosition: {x: 0, y: 250}
+  m_SizeDelta: {x: 1000, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1092139670
 MonoBehaviour:
@@ -4070,11 +4134,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 44
+    m_FontSize: 52
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 44
+    m_MaxSize: 52
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -4604,8 +4668,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 120}
-  m_SizeDelta: {x: 900, y: 80}
+  m_AnchoredPosition: {x: 0, y: 220}
+  m_SizeDelta: {x: 1100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1282097184
 MonoBehaviour:
@@ -4629,11 +4693,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 44
+    m_FontSize: 72
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 44
+    m_MaxSize: 72
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -4843,7 +4907,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -4851,8 +4915,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Next Level
 --- !u!222 &1338573209
@@ -5008,7 +5072,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5.5
+  orthographic size: 7.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -5084,7 +5148,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1355938649}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
   m_Name: 
@@ -5220,6 +5284,7 @@ GameObject:
   - component: {fileID: 1369257974}
   - component: {fileID: 1369257973}
   - component: {fileID: 1369257975}
+  - component: {fileID: 1369257976}
   m_Layer: 0
   m_Name: GameOverRestartButton
   m_TagString: Untagged
@@ -5245,7 +5310,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 240, y: 54}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1369257973
 MonoBehaviour:
@@ -5329,6 +5394,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1369257976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1369257971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1001 &1406145199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5702,7 +5781,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1280, y: 720}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -5744,6 +5823,7 @@ GameObject:
   - component: {fileID: 1521922266}
   - component: {fileID: 1521922265}
   - component: {fileID: 1521922264}
+  - component: {fileID: 1521922268}
   m_Layer: 0
   m_Name: LevelCompleteMainMenuButton
   m_TagString: Untagged
@@ -5850,9 +5930,23 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -160}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: -210}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1521922268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1521922263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1 &1528801874
 GameObject:
   m_ObjectHideFlags: 0
@@ -6052,11 +6146,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1902249724}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 40}
-  m_SizeDelta: {x: 360, y: 28}
-  m_Pivot: {x: 0.5, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 110}
+  m_SizeDelta: {x: 900, y: 110}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1566404591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6079,7 +6173,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 22
+    m_FontSize: 36
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -6088,8 +6182,8 @@ MonoBehaviour:
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
-    m_VerticalOverflow: 0
-    m_LineSpacing: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1.15
   m_Text: 'Coins: 0   Score: 0'
 --- !u!222 &1566404592
 CanvasRenderer:
@@ -6368,6 +6462,7 @@ GameObject:
   - component: {fileID: 1642615909}
   - component: {fileID: 1642615908}
   - component: {fileID: 1642615910}
+  - component: {fileID: 1642615911}
   m_Layer: 0
   m_Name: LevelCompleteRestartButton
   m_TagString: Untagged
@@ -6392,8 +6487,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -90}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: -110}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1642615908
 MonoBehaviour:
@@ -6477,6 +6572,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1642615911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1642615906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1 &1649055490
 GameObject:
   m_ObjectHideFlags: 0
@@ -7240,6 +7349,7 @@ GameObject:
   - component: {fileID: 1742482990}
   - component: {fileID: 1742482989}
   - component: {fileID: 1742482991}
+  - component: {fileID: 1742482992}
   m_Layer: 0
   m_Name: GameOverMainMenuButton
   m_TagString: Untagged
@@ -7264,8 +7374,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -110}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: -140}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1742482989
 MonoBehaviour:
@@ -7349,6 +7459,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1742482992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1742482987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1 &1751925938
 GameObject:
   m_ObjectHideFlags: 0
@@ -7383,8 +7507,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 120}
-  m_SizeDelta: {x: 900, y: 80}
+  m_AnchoredPosition: {x: 0, y: 220}
+  m_SizeDelta: {x: 1100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1751925940
 MonoBehaviour:
@@ -7408,11 +7532,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 44
+    m_FontSize: 72
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 44
+    m_MaxSize: 72
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -7720,7 +7844,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -7728,8 +7852,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Settings
 --- !u!222 &1821876927
@@ -7799,7 +7923,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -7807,8 +7931,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Main Menu
 --- !u!222 &1858573029
@@ -8097,10 +8221,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.FlowScreenSummary
   summaryText: {fileID: 1566404591}
-  format: 'Coins: {0}   Score: {1}'
+  format: 'Coins  {0}
+
+    Score  {1}'
   campaignCompleteFormat: 'Campaign cleared!
 
-    Coins: {0}   Score: {1}'
+    Coins  {0}
+
+    Score  {1}'
 --- !u!1001 &1908069292
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8183,6 +8311,7 @@ GameObject:
   - component: {fileID: 1916085714}
   - component: {fileID: 1916085713}
   - component: {fileID: 1916085715}
+  - component: {fileID: 1916085716}
   m_Layer: 0
   m_Name: PauseRestartButton
   m_TagString: Untagged
@@ -8207,8 +8336,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -90}
-  m_SizeDelta: {x: 240, y: 54}
+  m_AnchoredPosition: {x: 0, y: -60}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1916085713
 MonoBehaviour:
@@ -8292,6 +8421,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1916085716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916085711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1 &2006291441
 GameObject:
   m_ObjectHideFlags: 0
@@ -8326,8 +8469,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 120}
-  m_SizeDelta: {x: 900, y: 80}
+  m_AnchoredPosition: {x: 0, y: 220}
+  m_SizeDelta: {x: 1100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2006291443
 MonoBehaviour:
@@ -8351,11 +8494,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 44
+    m_FontSize: 72
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 44
+    m_MaxSize: 72
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -8383,6 +8526,7 @@ GameObject:
   - component: {fileID: 2017873724}
   - component: {fileID: 2017873723}
   - component: {fileID: 2017873725}
+  - component: {fileID: 2017873726}
   m_Layer: 0
   m_Name: PauseSettingsButton
   m_TagString: Untagged
@@ -8408,7 +8552,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -160}
-  m_SizeDelta: {x: 260, y: 54}
+  m_SizeDelta: {x: 520, y: 76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2017873723
 MonoBehaviour:
@@ -8492,6 +8636,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2017873726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2017873721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be08d0cb54be134992eeea057b6f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.UiButtonPunch
+  punchScale: 1.08
+  duration: 0.12
 --- !u!1001 &2018011410
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8613,7 +8771,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -8621,8 +8779,8 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Restart
 --- !u!222 &2021046186
@@ -8842,6 +9000,7 @@ MonoBehaviour:
   pauseLabel: PAUSED
   playerHealth: {fileID: 1600072944}
   playerPowerUps: {fileID: 1600072943}
+  heartsDisplay: {fileID: 0}
 --- !u!1 &2129899564
 GameObject:
   m_ObjectHideFlags: 0

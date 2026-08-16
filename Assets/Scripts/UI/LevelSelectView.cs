@@ -97,7 +97,13 @@ namespace BounderTrail.UI
             var rect = instance.GetComponent<RectTransform>();
             if (rect != null)
             {
-                rect.anchoredPosition = new Vector2(0f, 80f - (index * 70f));
+                rect.anchoredPosition = new Vector2(0f, 140f - (index * 58f));
+                rect.sizeDelta = new Vector2(Mathf.Max(rect.sizeDelta.x, 520f), Mathf.Max(rect.sizeDelta.y, 52f));
+            }
+
+            if (label != null)
+            {
+                label.fontSize = Mathf.Max(label.fontSize, 28);
             }
         }
 

@@ -65,10 +65,27 @@ namespace BounderTrail.Enemies
             var playerBody = collision.rigidbody;
             var playerHealth = collision.collider.GetComponentInParent<PlayerHealth>();
 
-            var isStomp = canBeStomped
-                          && player.position.y >= transform.position.y + stompHeightThreshold
-                          && playerBody != null
-                          && playerBody.linearVelocity.y <= 0.1f;
+            var isStomp = false;
+            if (canBeStomped && playerBody != null && playerBody.linearVelocity.y <= 0.15f)
+            {
+                // Prefer contact normals (reliable on slopes / tall colliders).
+                // On the enemy, the contact normal points from the player toward this body,
+                // so a stomp from above produces a downward normal.
+                for (var i = 0; i < collision.contactCount; i++)
+                {
+                    var normal = collision.GetContact(i).normal;
+                    if (normal.y < -0.35f)
+                    {
+                        isStomp = true;
+                        break;
+                    }
+                }
+
+                if (!isStomp)
+                {
+                    isStomp = player.position.y >= transform.position.y + stompHeightThreshold;
+                }
+            }
 
             if (isStomp)
             {

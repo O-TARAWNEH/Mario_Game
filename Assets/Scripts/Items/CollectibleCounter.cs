@@ -1,11 +1,10 @@
 // Filename: CollectibleCounter.cs
 // Folder: Assets/Scripts/Items/
-// Purpose: Run-wide coin/score counter and collection event hub (Phase 12).
-// Dependencies: CollectiblePickupInfo, BounderTrail.Core.GameLog, GameStateManager, LevelLoader
+// Purpose: Run-wide coin/score counter and collection event hub (Phase 12/42).
+// Dependencies: CollectiblePickupInfo, BounderTrail.Core.GameLog, GameStateManager, RespawnSystem
 
 using System;
 using BounderTrail.Core;
-using BounderTrail.Data;
 using BounderTrail.Levels;
 using UnityEngine;
 
@@ -14,23 +13,37 @@ namespace BounderTrail.Items
     /// <summary>
     /// Tracks collected coins/score and notifies listeners (HUD, audio, etc.).
     /// Lives on the persistent bootstrap object.
+    /// Coins persist across levels within a run; reset on new game / restart / game over / menu.
     /// </summary>
     public class CollectibleCounter : MonoBehaviour
     {
         public static CollectibleCounter Instance { get; private set; }
 
+        [Header("Rewards")]
+        [SerializeField] private int coinsPerBonusLife = 25;
+        [SerializeField] private bool grantBonusLives = true;
+
         [Header("Debug")]
         [SerializeField] private bool logCollections = true;
         [SerializeField] private bool autoResetOnNewRun = true;
 
+        private int _coinsTowardBonusLife;
+
         public int CoinCount { get; private set; }
         public int Score { get; private set; }
+        public int BonusLivesEarnedThisRun { get; private set; }
+        public int CoinsPerBonusLife => Mathf.Max(1, coinsPerBonusLife);
+        public int CoinsUntilBonusLife =>
+            grantBonusLives ? Mathf.Max(0, CoinsPerBonusLife - _coinsTowardBonusLife) : 0;
 
         /// <summary>Raised after counts update for a successful pickup.</summary>
         public event Action<CollectiblePickupInfo> Collected;
 
         /// <summary>Raised whenever coin/score totals change (including reset).</summary>
         public event Action CountsChanged;
+
+        /// <summary>Raised when a coin milestone grants an extra life.</summary>
+        public event Action BonusLifeEarned;
 
         private void Awake()
         {
@@ -50,11 +63,6 @@ namespace BounderTrail.Items
             {
                 GameStateManager.Instance.StateChanged += OnStateChanged;
             }
-
-            if (LevelLoader.Instance != null)
-            {
-                LevelLoader.Instance.LevelLoadStarted += OnLevelLoadStarted;
-            }
         }
 
         private void OnDisable()
@@ -62,11 +70,6 @@ namespace BounderTrail.Items
             if (GameStateManager.Instance != null)
             {
                 GameStateManager.Instance.StateChanged -= OnStateChanged;
-            }
-
-            if (LevelLoader.Instance != null)
-            {
-                LevelLoader.Instance.LevelLoadStarted -= OnLevelLoadStarted;
             }
         }
 
@@ -77,12 +80,6 @@ namespace BounderTrail.Items
             {
                 GameStateManager.Instance.StateChanged -= OnStateChanged;
                 GameStateManager.Instance.StateChanged += OnStateChanged;
-            }
-
-            if (LevelLoader.Instance != null)
-            {
-                LevelLoader.Instance.LevelLoadStarted -= OnLevelLoadStarted;
-                LevelLoader.Instance.LevelLoadStarted += OnLevelLoadStarted;
             }
         }
 
@@ -99,6 +96,7 @@ namespace BounderTrail.Items
             if (info.CoinValue > 0)
             {
                 CoinCount += info.CoinValue;
+                TryAwardBonusLives(info.CoinValue);
             }
 
             if (info.ScoreValue > 0)
@@ -121,30 +119,46 @@ namespace BounderTrail.Items
         {
             CoinCount = 0;
             Score = 0;
+            BonusLivesEarnedThisRun = 0;
+            _coinsTowardBonusLife = 0;
             CountsChanged?.Invoke();
             GameLog.Info("Items", "Collectible counters reset.");
         }
 
-        private void OnLevelLoadStarted(LevelData _)
+        private void TryAwardBonusLives(int coinsAdded)
         {
-            if (autoResetOnNewRun)
+            if (!grantBonusLives || coinsAdded <= 0 || coinsPerBonusLife <= 0)
             {
-                ResetCounts();
+                return;
+            }
+
+            _coinsTowardBonusLife += coinsAdded;
+            while (_coinsTowardBonusLife >= coinsPerBonusLife)
+            {
+                _coinsTowardBonusLife -= coinsPerBonusLife;
+                BonusLivesEarnedThisRun++;
+
+                if (RespawnSystem.Instance != null)
+                {
+                    RespawnSystem.Instance.GrantBonusLife();
+                }
+
+                BonusLifeEarned?.Invoke();
+                GameLog.Info("Items", $"Bonus life earned ({CoinCount} coins).");
             }
         }
 
         private void OnStateChanged(GameStateId previous, GameStateId next)
         {
-            if (!autoResetOnNewRun || next != GameStateId.Gameplay)
+            if (!autoResetOnNewRun)
             {
                 return;
             }
 
-            // Fresh run into gameplay (not unpausing).
-            if (previous == GameStateId.MainMenu
-                || previous == GameStateId.GameOver
-                || previous == GameStateId.LevelComplete
-                || previous == GameStateId.Boot)
+            // Wipe run totals when returning to menu / boot.
+            // Keep totals on Game Over / Level Complete so summary screens stay accurate.
+            // RestartGameplay / StartNewGame call ResetCounts explicitly.
+            if (next == GameStateId.MainMenu || next == GameStateId.Boot)
             {
                 ResetCounts();
             }

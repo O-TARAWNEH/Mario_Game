@@ -91,6 +91,17 @@ namespace BounderTrail.EditorTools
             camera.orthographic = true;
             camera.orthographicSize = ProjectConstants.GameplayOrthographicSize;
 
+            // Pixel Perfect prints a red on-screen warning in small Game views; keep ortho only.
+            var behaviours = camera.GetComponents<Behaviour>();
+            for (var i = 0; i < behaviours.Length; i++)
+            {
+                if (behaviours[i] != null && behaviours[i].GetType().Name == "PixelPerfectCamera")
+                {
+                    behaviours[i].enabled = false;
+                    EditorUtility.SetDirty(behaviours[i]);
+                }
+            }
+
             var follow = camera.GetComponent<CameraFollow2D>();
             if (follow == null)
             {

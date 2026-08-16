@@ -7,6 +7,8 @@ using BounderTrail.Audio;
 using BounderTrail.Items;
 using BounderTrail.Levels;
 using BounderTrail.Save;
+using BounderTrail.UI;
+using BounderTrail.Vfx;
 using UnityEngine;
 
 namespace BounderTrail.Core
@@ -50,6 +52,8 @@ namespace BounderTrail.Core
             EnsureCollectibleCounter();
             EnsureAudioManager();
             EnsureGameProgress();
+            EnsureHitStop();
+            EnsureScreenFade();
             SaveSystem.Instance?.ApplyLoadedData();
 
             if (logBootstrapEvents)
@@ -132,6 +136,24 @@ namespace BounderTrail.Core
             {
                 gameObject.AddComponent<GameProgress>();
                 GameLog.Info("Bootstrap", "GameProgress added to GameBootstrap object.");
+            }
+        }
+
+        private void EnsureHitStop()
+        {
+            if (GetComponent<HitStop>() == null)
+            {
+                gameObject.AddComponent<HitStop>();
+                GameLog.Info("Bootstrap", "HitStop added to GameBootstrap object.");
+            }
+        }
+
+        private void EnsureScreenFade()
+        {
+            if (GetComponent<ScreenFade>() == null)
+            {
+                gameObject.AddComponent<ScreenFade>();
+                GameLog.Info("Bootstrap", "ScreenFade added to GameBootstrap object.");
             }
         }
     }

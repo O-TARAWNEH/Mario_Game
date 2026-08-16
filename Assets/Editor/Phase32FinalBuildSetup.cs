@@ -30,7 +30,9 @@ namespace BounderTrail.EditorTools
             "Assets/Scenes/MainMenu.unity",
             "Assets/Scenes/Level_01_LumenMeadows.unity",
             "Assets/Scenes/Level_02_CascadeCliffs.unity",
-            "Assets/Scenes/Level_03_SkybridgeSpire.unity"
+            "Assets/Scenes/Level_03_SkybridgeSpire.unity",
+            "Assets/Scenes/Level_04_EchoCaverns.unity",
+            "Assets/Scenes/Level_05_LanternLockworks.unity"
         };
 
         [MenuItem("Bounder Trail/Phase 32/Prepare Final Build")]

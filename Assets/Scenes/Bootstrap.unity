@@ -283,6 +283,11 @@ MonoBehaviour:
   - id: 11
     clip: {fileID: 8300000, guid: bf053553d8598274a983fac3ac06e04b, type: 3}
     volumeScale: 0.9
+  - id: 12
+    clip: {fileID: 8300000, guid: a7c4e91b2d8f4a0e9b3c5d6e7f801234, type: 3}
+    volumeScale: 0.9
+  enablePitchVariation: 1
+  pitchVariation: 0.06
 --- !u!4 &671022219
 Transform:
   m_ObjectHideFlags: 0
@@ -315,6 +320,8 @@ GameObject:
   - component: {fileID: 715694890}
   - component: {fileID: 715694891}
   - component: {fileID: 715694892}
+  - component: {fileID: 715694894}
+  - component: {fileID: 715694893}
   m_Layer: 0
   m_Name: GameBootstrap
   m_TagString: Untagged
@@ -460,6 +467,37 @@ MonoBehaviour:
   sparkleSprite: {fileID: 21300000, guid: 4b2ca88593af2fa4ca9398fba0d7b4ea, type: 3}
   hitRingSprite: {fileID: 21300000, guid: 28e262cd439e7ca498bcee3d4fe3d0e3, type: 3}
   completeShakeAmplitude: 0.14
+  collectBurstSize: 0.85
+  completeBurstSize: 1.85
+--- !u!114 &715694893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715694883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5f56068d38bb3f4b81177ad086a02fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.UI.ScreenFade
+  fadeImage: {fileID: 0}
+  defaultDuration: 0.22
+  fadeColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!114 &715694894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715694883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acccec501c7a09446ba64207e92d3a35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.Vfx.HitStop
+  defaultScale: 0.05
+  maxDuration: 0.12
 --- !u!1 &1305331047
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,6 +622,7 @@ MonoBehaviour:
   musicSource: {fileID: 0}
   menuMusic: {fileID: 8300000, guid: 20c5b97a1c884b248a6e7d3d04585d11, type: 3}
   gameplayMusic: {fileID: 8300000, guid: cc3e235e99f11ed4e94848ce5353ec56, type: 3}
+  victoryMusic: {fileID: 8300000, guid: b8d5f02c3e9a5b1f0c4d6e7f80912345, type: 3}
 --- !u!4 &1529575617
 Transform:
   m_ObjectHideFlags: 0

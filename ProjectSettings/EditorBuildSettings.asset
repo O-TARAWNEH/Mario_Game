@@ -20,4 +20,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Level_03_SkybridgeSpire.unity
     guid: 5164daa0b07d0964185e0bf40a24ef91
+  - enabled: 1
+    path: Assets/Scenes/Level_04_EchoCaverns.unity
+    guid: 8d2b7b2f6bbf43c3b29a1cc5c53467ca
+  - enabled: 1
+    path: Assets/Scenes/Level_05_LanternLockworks.unity
+    guid: 82a8620f81464a96b4e9fe2276004277
   m_configObjects: {}

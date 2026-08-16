@@ -38,5 +38,7 @@ namespace BounderTrail.Core
         public const string Level01SceneName = "Level_01_LumenMeadows";
         public const string Level02SceneName = "Level_02_CascadeCliffs";
         public const string Level03SceneName = "Level_03_SkybridgeSpire";
+        public const string Level04SceneName = "Level_04_EchoCaverns";
+        public const string Level05SceneName = "Level_05_LanternLockworks";
     }
 }

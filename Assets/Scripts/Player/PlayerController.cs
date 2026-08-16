@@ -24,28 +24,28 @@ namespace BounderTrail.Player
         [SerializeField] private SpriteRenderer spriteRenderer;
 
         [Header("Horizontal Movement")]
-        [SerializeField] private float walkSpeed = 6.5f;
-        [SerializeField] private float runSpeed = 9.5f;
-        [SerializeField] private float acceleration = 75f;
-        [SerializeField] private float deceleration = 85f;
-        [SerializeField] private float airAcceleration = 45f;
-        [SerializeField] private float airDeceleration = 40f;
+        [SerializeField] private float walkSpeed = 7.2f;
+        [SerializeField] private float runSpeed = 10.8f;
+        [SerializeField] private float acceleration = 92f;
+        [SerializeField] private float deceleration = 98f;
+        [SerializeField] private float airAcceleration = 50f;
+        [SerializeField] private float airDeceleration = 44f;
         [Range(0f, 1f)]
-        [SerializeField] private float airControl = 0.75f;
+        [SerializeField] private float airControl = 0.82f;
 
         [Header("Jumping")]
-        [SerializeField] private float jumpForce = 15f;
+        [SerializeField] private float jumpForce = 16.2f;
         [SerializeField] private float coyoteTime = 0.12f;
         [SerializeField] private float jumpBufferTime = 0.14f;
         [Range(0f, 1f)]
-        [SerializeField] private float jumpCutMultiplier = 0.45f;
-        [SerializeField] private float jumpCutGravityMultiplier = 2.2f;
+        [SerializeField] private float jumpCutMultiplier = 0.48f;
+        [SerializeField] private float jumpCutGravityMultiplier = 2.35f;
 
         [Header("Gravity")]
-        [SerializeField] private float gravity = 3.2f;
-        [SerializeField] private float fallGravityMultiplier = 2.15f;
-        [SerializeField] private float apexHangGravityMultiplier = 0.42f;
-        [SerializeField] private float apexHangVelocityThreshold = 1.25f;
+        [SerializeField] private float gravity = 3.45f;
+        [SerializeField] private float fallGravityMultiplier = 2.35f;
+        [SerializeField] private float apexHangGravityMultiplier = 0.72f;
+        [SerializeField] private float apexHangVelocityThreshold = 0.85f;
         [SerializeField] private float maximumFallSpeed = 24f;
 
         [Header("Slope / Edge Assist")]
@@ -54,13 +54,15 @@ namespace BounderTrail.Player
 
         [Header("Input")]
         [SerializeField] private string horizontalAxis = "Horizontal";
-        [SerializeField] private string jumpButton = "Jump";
+        [SerializeField] private KeyCode[] jumpKeys = { KeyCode.Space, KeyCode.W, KeyCode.UpArrow };
+        [SerializeField] private KeyCode jumpKey = KeyCode.Space;
         [SerializeField] private KeyCode runKey = KeyCode.LeftShift;
 
         private float _horizontalInput;
         private bool _runHeld;
         private bool _jumpPressed;
         private bool _jumpReleased;
+        private bool _jumpHeld;
         private bool _facingRight = true;
 
         private float _coyoteTimer;
@@ -69,8 +71,10 @@ namespace BounderTrail.Player
         private bool _wasGrounded;
         private float _controlLockTimer;
         private float _speedMultiplier = 1f;
+        private float _fallSpeedTracker;
+        private float _lastLandingSpeed;
 
-        public bool IsGrounded => groundSensor != null && groundSensor.IsGrounded;
+        public bool IsGrounded => groundSensor != null && groundSensor.IsGrounded && !IsRisingFromJump;
         public bool FacingRight => _facingRight;
         public float CurrentMoveSpeed => (_runHeld ? runSpeed : walkSpeed) * _speedMultiplier;
         public bool IsRunning => _runHeld && Mathf.Abs(_horizontalInput) > 0.01f;
@@ -80,6 +84,9 @@ namespace BounderTrail.Player
         public bool IsFallingVisual => !IsGrounded && VerticalVelocity < -0.15f;
         public bool IsControlLocked => _controlLockTimer > 0f;
         public float SpeedMultiplier => _speedMultiplier;
+        /// <summary>Downward speed at the moment of the most recent landing (for juice).</summary>
+        public float LastLandingSpeed => _lastLandingSpeed;
+        private bool IsRisingFromJump => _isJumping && VerticalVelocity > 0.35f;
 
         /// <summary>Raised when a jump is successfully consumed.</summary>
         public event Action Jumped;
@@ -145,7 +152,7 @@ namespace BounderTrail.Player
 
             if (spriteRenderer == null)
             {
-                spriteRenderer = GetComponent<SpriteRenderer>();
+                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             }
 
             ConfigureRigidbody();
@@ -159,6 +166,7 @@ namespace BounderTrail.Player
             {
                 _horizontalInput = 0f;
                 _runHeld = false;
+                _jumpHeld = false;
                 _jumpPressed = false;
                 _jumpReleased = false;
                 return;
@@ -166,14 +174,15 @@ namespace BounderTrail.Player
 
             _horizontalInput = Input.GetAxisRaw(horizontalAxis);
             _runHeld = Input.GetKey(runKey);
+            _jumpHeld = IsAnyJumpKeyHeld();
 
-            if (Input.GetButtonDown(jumpButton))
+            if (WasAnyJumpKeyPressedThisFrame())
             {
                 _jumpPressed = true;
                 _jumpBufferTimer = jumpBufferTime;
             }
 
-            if (Input.GetButtonUp(jumpButton))
+            if (WasAnyJumpKeyReleasedThisFrame())
             {
                 _jumpReleased = true;
             }
@@ -188,6 +197,7 @@ namespace BounderTrail.Player
                 return;
             }
 
+            TrackFallSpeed();
             UpdateCoyoteAndLanding();
             ApplyGravityScaling();
 
@@ -223,14 +233,31 @@ namespace BounderTrail.Player
             }
         }
 
-        private void UpdateCoyoteAndLanding()
+        private void TrackFallSpeed()
         {
             if (IsGrounded)
+            {
+                return;
+            }
+
+            var downward = -VerticalVelocity;
+            if (downward > _fallSpeedTracker)
+            {
+                _fallSpeedTracker = downward;
+            }
+        }
+
+        private void UpdateCoyoteAndLanding()
+        {
+            var grounded = IsGrounded;
+            if (grounded)
             {
                 _coyoteTimer = coyoteTime;
 
                 if (!_wasGrounded)
                 {
+                    _lastLandingSpeed = _fallSpeedTracker;
+                    _fallSpeedTracker = 0f;
                     _isJumping = false;
                     Landed?.Invoke();
                 }
@@ -240,7 +267,7 @@ namespace BounderTrail.Player
                 _coyoteTimer -= Time.fixedDeltaTime;
             }
 
-            _wasGrounded = IsGrounded;
+            _wasGrounded = grounded;
         }
 
         private void ApplyGravityScaling()
@@ -257,7 +284,7 @@ namespace BounderTrail.Player
                 // Brief apex hang — Mario-like air control window at jump peak (Phase 34).
                 scale = gravity * apexHangGravityMultiplier;
             }
-            else if (_isJumping && !Input.GetButton(jumpButton))
+            else if (_isJumping && !_jumpHeld)
             {
                 // Extra gravity while rising after early jump release.
                 scale = gravity * jumpCutGravityMultiplier;
@@ -392,6 +419,54 @@ namespace BounderTrail.Player
             }
         }
 
+        private bool WasAnyJumpKeyPressedThisFrame()
+        {
+            if (jumpKeys != null)
+            {
+                for (var i = 0; i < jumpKeys.Length; i++)
+                {
+                    if (Input.GetKeyDown(jumpKeys[i]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return Input.GetKeyDown(jumpKey);
+        }
+
+        private bool WasAnyJumpKeyReleasedThisFrame()
+        {
+            if (jumpKeys != null)
+            {
+                for (var i = 0; i < jumpKeys.Length; i++)
+                {
+                    if (Input.GetKeyUp(jumpKeys[i]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return Input.GetKeyUp(jumpKey);
+        }
+
+        private bool IsAnyJumpKeyHeld()
+        {
+            if (jumpKeys != null)
+            {
+                for (var i = 0; i < jumpKeys.Length; i++)
+                {
+                    if (Input.GetKey(jumpKeys[i]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return Input.GetKey(jumpKey);
+        }
+
         private static bool CanAcceptGameplayInput()
         {
             if (GameStateManager.Instance == null)
@@ -423,6 +498,11 @@ namespace BounderTrail.Player
             apexHangVelocityThreshold = Mathf.Max(0.05f, apexHangVelocityThreshold);
             maximumFallSpeed = Mathf.Max(0f, maximumFallSpeed);
             groundedStickForce = Mathf.Max(0f, groundedStickForce);
+
+            if (jumpKeys == null || jumpKeys.Length == 0)
+            {
+                jumpKeys = new[] { KeyCode.Space, KeyCode.W, KeyCode.UpArrow };
+            }
         }
 #endif
     }

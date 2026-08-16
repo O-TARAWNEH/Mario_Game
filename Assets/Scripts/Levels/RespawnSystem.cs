@@ -134,6 +134,22 @@ namespace BounderTrail.Levels
             LivesChanged?.Invoke(_lives);
         }
 
+        /// <summary>
+        /// Grants one extra retry (coin milestone / reward). Caps at a sane upper bound.
+        /// </summary>
+        public void GrantBonusLife()
+        {
+            const int maxLives = 99;
+            if (_lives >= maxLives)
+            {
+                return;
+            }
+
+            _lives++;
+            LivesChanged?.Invoke(_lives);
+            GameLog.Info("Level", $"Bonus life granted. Lives remaining: {_lives}.");
+        }
+
         private void OnPlayerDied()
         {
             if (_isRespawning)

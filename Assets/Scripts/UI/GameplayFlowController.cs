@@ -48,6 +48,7 @@ namespace BounderTrail.UI
 
         [Header("Input")]
         [SerializeField] private KeyCode pauseKey = KeyCode.Escape;
+        [SerializeField] private KeyCode quickRestartKey = KeyCode.R;
 
         [Header("Debug")]
         [SerializeField] private bool enableDebugShortcuts;
@@ -92,6 +93,11 @@ namespace BounderTrail.UI
                 HandlePauseKey();
             }
 
+            if (Input.GetKeyDown(quickRestartKey))
+            {
+                HandleQuickRestart();
+            }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!enableDebugShortcuts || GameStateManager.Instance.CurrentState != GameStateId.Gameplay)
             {
@@ -114,6 +120,21 @@ namespace BounderTrail.UI
                 }
             }
 #endif
+        }
+
+        private void HandleQuickRestart()
+        {
+            var state = GameStateManager.Instance.CurrentState;
+            if (state != GameStateId.Gameplay
+                && state != GameStateId.Pause
+                && state != GameStateId.GameOver
+                && state != GameStateId.LevelComplete)
+            {
+                return;
+            }
+
+            AudioManager.PlaySfx(SfxId.Ui);
+            GameStateManager.Instance.RestartGameplay();
         }
 
         private void HandlePauseKey()

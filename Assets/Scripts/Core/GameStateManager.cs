@@ -7,8 +7,10 @@
 
 using System;
 using System.Collections;
+using BounderTrail.Items;
 using BounderTrail.Levels;
 using BounderTrail.Save;
+using BounderTrail.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -107,6 +109,8 @@ namespace BounderTrail.Core
                 GameProgress.Instance.StartNewGame();
             }
 
+            CollectibleCounter.Instance?.ResetCounts();
+
             if (LevelLoader.Instance != null)
             {
                 _isTransitioning = true;
@@ -169,6 +173,9 @@ namespace BounderTrail.Core
             {
                 return;
             }
+
+            // Fresh attempt — clear run coins so restarts stay fair and frustration-free.
+            CollectibleCounter.Instance?.ResetCounts();
 
             if (LevelLoader.Instance != null)
             {
@@ -316,10 +323,13 @@ namespace BounderTrail.Core
                 GameLog.Info("GameState", $"Loading scene '{sceneName}' for state {state}...");
             }
 
+            yield return ScreenFade.FadeOut(0.18f);
+
             var operation = SceneManager.LoadSceneAsync(sceneName);
             if (operation == null)
             {
                 GameLog.Error("GameState", $"Failed to load scene '{sceneName}'. Is it in Build Settings?");
+                yield return ScreenFade.FadeIn(0.12f);
                 _isTransitioning = false;
                 yield break;
             }
@@ -330,6 +340,7 @@ namespace BounderTrail.Core
             }
 
             SetState(state);
+            yield return ScreenFade.FadeIn(0.22f);
             _isTransitioning = false;
         }
 

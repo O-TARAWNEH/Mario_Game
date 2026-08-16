@@ -128,7 +128,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 0.05}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -138,7 +138,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1, y: 1.1}
   m_EdgeRadius: 0
 --- !u!114 &717064601294934775
 MonoBehaviour:
@@ -154,6 +154,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BounderTrail.World.EnvironmentalHazard
   response: 1
   damage: 1
-  damageInterval: 0.2
+  damageInterval: 0.18
   playerTag: Player
   useTrigger: 1

@@ -98,7 +98,7 @@ namespace BounderTrail.EditorTools
             CreateLabel(
                 controlsPanel.transform,
                 "ControlsBody",
-                "Move: A / D  or  Arrow Keys\nJump: Space\nRun: Left Shift\nPause: Esc",
+                "Move: A / D\nJump: W\nRun: Left Shift\nPause: Esc",
                 26,
                 new Vector2(0f, 20f),
                 height: 180f);

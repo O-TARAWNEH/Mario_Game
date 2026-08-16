@@ -42,6 +42,9 @@ namespace BounderTrail.Data
             "Static spikes",
             "Fire / ember zones",
             "Moving spike hazards",
+            "Timed platforms (blink on/off)",
+            "Pressure switches",
+            "Gate barriers (switch-opened)",
             "Checkpoints",
             "Level exit door / goal"
         };
@@ -60,8 +63,6 @@ namespace BounderTrail.Data
         {
             "Secret areas",
             "Hidden collectibles (beyond coins)",
-            "Switches",
-            "Switch-gated doors",
             "Water / swimming",
             "Special movement (wall-jump, dash, etc.)",
             "Extra temporary abilities beyond Speed Burst / Glow Shield / Heart Drop",

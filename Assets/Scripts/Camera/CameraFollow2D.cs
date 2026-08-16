@@ -52,11 +52,29 @@ namespace BounderTrail.CameraSystem
             if (_camera != null)
             {
                 _camera.orthographic = true;
+                _camera.orthographicSize = ProjectConstants.GameplayOrthographicSize;
             }
+
+            DisablePixelPerfectCamera();
 
             if (cameraShake == null)
             {
                 cameraShake = GetComponent<CameraShake2D>();
+            }
+        }
+
+        private void DisablePixelPerfectCamera()
+        {
+            // URP PixelPerfectCamera draws a red Game-view warning when the display
+            // is smaller than its reference resolution. Keep a stable ortho size instead.
+            var behaviours = GetComponents<Behaviour>();
+            for (var i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i];
+                if (behaviour != null && behaviour.GetType().Name == "PixelPerfectCamera")
+                {
+                    behaviour.enabled = false;
+                }
             }
         }
 

@@ -35,11 +35,13 @@ namespace BounderTrail.UI
         [SerializeField] private string levelFormat = "{0}";
         [SerializeField] private string powerUpNone = "Power: —";
         [SerializeField] private string pauseLabel = "PAUSED";
+        [SerializeField] private string bonusLifeHintFormat = " (+{0} to 1UP)";
 
         [Header("References")]
         [SerializeField] private PlayerHealth playerHealth;
         [SerializeField] private PlayerPowerUps playerPowerUps;
         [SerializeField] private HealthHeartsDisplay heartsDisplay;
+        [SerializeField] private bool showBonusLifeHint = true;
 
         private bool _powerUpTickActive;
         private bool _cachedHasShield;
@@ -241,7 +243,17 @@ namespace BounderTrail.UI
 
             if (coinsText != null)
             {
-                coinsText.text = string.Format(coinsFormat, coins);
+                if (showBonusLifeHint
+                    && CollectibleCounter.Instance != null
+                    && CollectibleCounter.Instance.CoinsPerBonusLife > 0)
+                {
+                    var until = CollectibleCounter.Instance.CoinsUntilBonusLife;
+                    coinsText.text = string.Format(coinsFormat, coins) + string.Format(bonusLifeHintFormat, until);
+                }
+                else
+                {
+                    coinsText.text = string.Format(coinsFormat, coins);
+                }
             }
 
             if (scoreText != null)

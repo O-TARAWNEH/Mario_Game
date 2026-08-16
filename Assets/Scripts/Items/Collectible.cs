@@ -76,6 +76,16 @@ namespace BounderTrail.Items
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            TryCollect(other);
+        }
+
+        private void OnTriggerStay2D(Collider2D other)
+        {
+            TryCollect(other);
+        }
+
+        private void TryCollect(Collider2D other)
+        {
             if (_collected || other == null)
             {
                 return;
